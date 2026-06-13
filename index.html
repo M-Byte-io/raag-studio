@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raag Studio — Alankar Practice</title>
+  <meta name="description" content="Practice Indian classical music alankars with customizable patterns, pitch, tempo and thaat-based pattern generator." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a12;
+      --surface: #12121e;
+      --surface2: #1a1a2e;
+      --surface3: #22223a;
+      --border: rgba(255,255,255,0.08);
+      --accent: #c084fc;
+      --accent2: #818cf8;
+      --accent3: #34d399;
+      --gold: #fbbf24;
+      --danger: #f87171;
+      --text: #f1f0ff;
+      --text2: #a29fc8;
+      --text3: #6b6890;
+      --glow: rgba(192,132,252,0.3);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+    body::before {
+      content: ''; position: fixed; top: -200px; left: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(192,132,252,0.07) 0%, transparent 70%);
+      pointer-events: none; animation: amb 8s ease-in-out infinite;
+    }
+    body::after {
+      content: ''; position: fixed; bottom: -150px; right: -150px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(129,140,248,0.05) 0%, transparent 70%);
+      pointer-events: none; animation: amb 10s ease-in-out infinite reverse;
+    }
+    @keyframes amb { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(30px) scale(1.05)} }
+
+    /* HEADER */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,18,0.88); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text { font-size: 20px; font-weight: 700; }
+    .logo-text span { color: var(--accent); }
+    .header-badge { font-size: 11px; font-weight: 600; color: var(--accent3); background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2); padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; }
+
+    /* LAYOUT */
+    .app { max-width: 1440px; margin: 0 auto; padding: 24px 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+    @media(max-width:900px){ .app{grid-template-columns:1fr} }
+
+    /* CARD */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; }
+    .card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(192,132,252,0.35),transparent); }
+    .card-title { font-size:12px; font-weight:700; color:var(--text3); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .card-title::before { content:''; width:3px; height:13px; background:linear-gradient(180deg,var(--accent),var(--accent2)); border-radius:2px; }
+
+    /* LEFT PANEL */
+    .left-panel { display:flex; flex-direction:column; gap:18px; }
+
+    /* PITCH GRID */
+    .pitch-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+    .pitch-btn { padding:8px 4px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
+    .pitch-btn:hover { background:var(--surface3); color:var(--text); border-color:rgba(192,132,252,0.3); }
+    .pitch-btn.active { background:linear-gradient(135deg,rgba(192,132,252,0.2),rgba(129,140,248,0.2)); border-color:var(--accent); color:var(--accent); box-shadow:0 0 10px rgba(192,132,252,0.2); }
+
+    /* OCTAVE */
+    .octave-selector { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .oct-btn { padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
+    .oct-btn .oct-hi { font-size:10px; opacity:0.6; display:block; margin-top:2px; }
+    .oct-btn:hover { background:var(--surface3); color:var(--text); }
+    .oct-btn.active { background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05)); border-color:var(--gold); color:var(--gold); }
+
+    /* TEMPO */
+    .tempo-display { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .tempo-value { font-size:36px; font-weight:800; line-height:1; }
+    .tempo-label { font-size:12px; color:var(--text3); margin-top:2px; }
+    .tempo-btns { display:flex; gap:6px; }
+    .tempo-adj { width:32px; height:32px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; font-weight:600; }
+    .tempo-adj:hover { background:var(--surface3); border-color:rgba(192,132,252,0.4); }
+
+    input[type="range"] { -webkit-appearance:none; width:100%; height:6px; background:var(--surface3); border-radius:3px; outline:none; cursor:pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:50%; box-shadow:0 0 8px var(--glow); cursor:pointer; transition:transform 0.15s; }
+    input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
+
+    /* NOTE OPTIONS BAR */
+    .note-opts-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .opts-label { font-size:10px; color:var(--text3); font-weight:600; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px; }
+    .seg-btns { display:flex; gap:4px; }
+    .seg-btn { flex:1; padding:7px 4px; background:var(--surface2); border:1px solid var(--border); border-radius:7px; color:var(--text3); font-size:11px; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:center; }
+    .seg-btn:hover { background:var(--surface3); color:var(--text); }
+    .seg-btn.active-dur { background:rgba(251,191,36,0.15); border-color:var(--gold); color:var(--gold); }
+    .seg-btn.active-oct { background:rgba(192,132,252,0.15); border-color:var(--accent); color:var(--accent); }
+
+    /* DIRECTION */
+    .direction-selector { display:flex; gap:6px; }
+    .dir-btn { flex:1; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
+    .dir-btn:hover { background:var(--surface3); color:var(--text); }
+    .dir-btn.active { background:rgba(129,140,248,0.15); border-color:var(--accent2); color:var(--accent2); }
+
+    /* REPEATS / LOOP */
+    .repeat-row { display:flex; align-items:center; gap:10px; margin-top:10px; }
+    .repeat-val { font-size:22px; font-weight:700; width:36px; text-align:center; }
+    .loop-pill { padding:6px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--text3); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; margin-left:auto; }
+    .loop-pill:hover { border-color:rgba(52,211,153,0.4); color:var(--accent3); }
+    .loop-pill.active { background:rgba(52,211,153,0.1); border-color:var(--accent3); color:var(--accent3); }
+
+    /* WAVE */
+    .wave-selector { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+    .wave-btn { padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
+    .wave-btn:hover { background:var(--surface3); color:var(--text); }
+    .wave-btn.active { background:rgba(52,211,153,0.1); border-color:var(--accent3); color:var(--accent3); }
+
+    /* TANPURA */
+    .tanpura-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+    .tanpura-toggle { position:relative; width:44px; height:24px; cursor:pointer; flex-shrink:0; }
+    .tanpura-toggle input { display:none; }
+    .t-slider { position:absolute; inset:0; background:var(--surface3); border-radius:12px; transition:background 0.2s; }
+    .t-slider::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; background:white; border-radius:50%; transition:transform 0.2s; }
+    .tanpura-toggle input:checked + .t-slider { background:var(--accent); }
+    .tanpura-toggle input:checked + .t-slider::after { transform:translateX(20px); }
+
+    /* SAVED */
+    .saved-list { display:flex; flex-direction:column; gap:6px; }
+    .saved-item { display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s; }
+    .saved-item:hover { border-color:rgba(192,132,252,0.3); background:var(--surface3); }
+    .saved-name { font-size:13px; font-weight:600; flex:1; }
+    .saved-notes { font-size:10px; color:var(--text3); }
+    .icon-btn { width:26px; height:26px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:13px; border-radius:4px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+    .icon-btn:hover { background:rgba(248,113,113,0.15); color:var(--danger); }
+    .icon-btn.play:hover { background:rgba(52,211,153,0.15); color:var(--accent3); }
+
+    /* RIGHT PANEL */
+    .right-panel { display:flex; flex-direction:column; gap:18px; }
+
+    /* SWARA PALETTE */
+    .swara-palette { display:flex; flex-wrap:wrap; gap:7px; }
+    .swara-chip { display:flex; flex-direction:column; align-items:center; padding:9px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s; min-width:56px; user-select:none; }
+    .swara-chip:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+    .swara-chip .sn { font-size:17px; font-weight:700; }
+    .swara-chip .ss { font-size:9px; color:var(--text3); margin-top:2px; }
+    .swara-chip.komal { background:rgba(248,113,113,0.07); border-color:rgba(248,113,113,0.22); }
+    .swara-chip.komal .sn { color:#f87171; }
+    .swara-chip.teevra { background:rgba(251,191,36,0.07); border-color:rgba(251,191,36,0.22); }
+    .swara-chip.teevra .sn { color:var(--gold); }
+    .swara-chip.shuddh { background:rgba(192,132,252,0.07); border-color:rgba(192,132,252,0.22); }
+    .swara-chip.shuddh .sn { color:var(--accent); }
+    .swara-chip.pa-sa { background:rgba(52,211,153,0.07); border-color:rgba(52,211,153,0.22); }
+    .swara-chip.pa-sa .sn { color:var(--accent3); }
+    .swara-chip.active-note { box-shadow:0 0 16px currentColor; transform:translateY(-3px) scale(1.06); }
+
+    /* PATTERN TRACK */
+    .pattern-track { min-height:68px; background:var(--surface2); border:1px dashed rgba(192,132,252,0.28); border-radius:var(--radius-sm); padding:8px; display:flex; flex-wrap:wrap; gap:5px; align-items:center; position:relative; }
+    .pattern-track.empty::after { content:'Click swaras above to build your alankar…'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--text3); pointer-events:none; }
+
+    .pattern-note { display:inline-flex; flex-direction:column; align-items:center; padding:6px 9px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; position:relative; transition:all 0.2s; min-width:38px; }
+    .pattern-note .dur-badge { font-size:8px; position:absolute; bottom:2px; right:3px; opacity:0.75; font-weight:800; }
+    .pattern-note .oct-badge { font-size:7px; position:absolute; top:2px; right:3px; opacity:0.65; }
+    .pattern-note .del-x { position:absolute; top:-7px; right:-7px; width:15px; height:15px; background:var(--danger); color:white; border-radius:50%; font-size:9px; display:none; align-items:center; justify-content:center; z-index:2; }
+    .pattern-note:hover .del-x { display:flex; }
+    .pattern-note.komal { background:rgba(248,113,113,0.18); border:1px solid rgba(248,113,113,0.4); color:#f87171; }
+    .pattern-note.teevra { background:rgba(251,191,36,0.18); border:1px solid rgba(251,191,36,0.4); color:var(--gold); }
+    .pattern-note.shuddh { background:rgba(192,132,252,0.18); border:1px solid rgba(192,132,252,0.4); color:var(--accent); }
+    .pattern-note.pa-sa { background:rgba(52,211,153,0.18); border:1px solid rgba(52,211,153,0.4); color:var(--accent3); }
+    .pattern-note.dur-half { min-width:56px; } /* wider for half notes */
+    .pattern-note.dur-eighth { min-width:28px; opacity:0.9; } /* narrower for eighth */
+    .pattern-note.playing-note { animation:notePulse 0.25s ease; box-shadow:0 0 18px currentColor !important; }
+    @keyframes notePulse { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
+
+    /* FLOW NOTES */
+    .flow-notes { display:flex; flex-wrap:wrap; gap:3px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); min-height:44px; align-items:center; }
+    .flow-note { padding:3px 8px; border-radius:5px; font-size:12px; font-weight:600; opacity:0.4; background:var(--surface3); color:var(--text2); transition:all 0.1s; }
+    .flow-note.active { opacity:1; background:var(--accent); color:white; box-shadow:0 0 10px var(--glow); transform:scale(1.1); }
+    .flow-note.played { opacity:0.55; }
+    .flow-sep { color:var(--text3); font-size:11px; opacity:0.35; }
+
+    /* PATTERN ACTIONS */
+    .pattern-actions { display:flex; gap:7px; flex-wrap:wrap; margin-top:10px; }
+    .btn { padding:8px 14px; border-radius:var(--radius-sm); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; border:none; display:flex; align-items:center; gap:5px; letter-spacing:0.3px; }
+    .btn-ghost { background:var(--surface2); border:1px solid var(--border); color:var(--text2); }
+    .btn-ghost:hover { background:var(--surface3); color:var(--text); }
+    .btn-danger { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--danger); }
+    .btn-danger:hover { background:rgba(248,113,113,0.2); }
+    .btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; box-shadow:0 4px 14px rgba(192,132,252,0.3); }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(192,132,252,0.4); }
+    .btn-success { background:linear-gradient(135deg,#34d399,#10b981); color:white; box-shadow:0 4px 14px rgba(52,211,153,0.3); }
+    .btn-success:hover { transform:translateY(-1px); }
+    .btn-gold { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#1a1000; box-shadow:0 4px 14px rgba(251,191,36,0.3); }
+    .btn-gold:hover { transform:translateY(-1px); }
+
+    /* PRESETS GRID */
+    .presets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:9px; }
+    .preset-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:13px; cursor:pointer; transition:all 0.2s; }
+    .preset-card:hover { border-color:rgba(192,132,252,0.35); background:var(--surface3); transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.3); }
+    .preset-card.selected { border-color:var(--accent); background:rgba(192,132,252,0.07); }
+    .preset-name { font-size:13px; font-weight:600; margin-bottom:5px; }
+    .preset-notes { font-size:11px; color:var(--text3); font-family:monospace; line-height:1.5; }
+    .preset-tags { display:flex; gap:4px; margin-top:7px; flex-wrap:wrap; }
+    .tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; background:rgba(129,140,248,0.1); border:1px solid rgba(129,140,248,0.2); color:var(--accent2); }
+
+    /* ──────── PATTERN GENERATOR ──────── */
+    .thaat-select-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+    .thaat-select { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; font-weight:600; padding:8px 12px; outline:none; cursor:pointer; font-family:'Outfit',sans-serif; flex:1; }
+    .thaat-select:focus { border-color:var(--accent); }
+    .thaat-notes-strip { display:flex; flex-wrap:wrap; gap:5px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); margin-bottom:10px; min-height:52px; align-items:center; }
+    .thaat-note-chip { padding:5px 12px; border-radius:6px; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.18s; border:1px solid transparent; user-select:none; }
+    .thaat-note-chip:hover { transform:translateY(-2px); }
+    .gen-input-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .gen-input-track { display:flex; gap:5px; flex-wrap:wrap; min-height:36px; padding:6px 10px; background:var(--surface2); border:1px dashed rgba(192,132,252,0.3); border-radius:8px; flex:1; align-items:center; position:relative; }
+    .gen-input-track.empty::after { content:'Click thaat notes above…'; font-size:11px; color:var(--text3); pointer-events:none; }
+    .gen-note-pill { padding:4px 10px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; position:relative; display:flex; align-items:center; }
+    .gen-note-pill .del-g { position:absolute; top:-5px; right:-5px; width:13px; height:13px; background:var(--danger); border-radius:50%; font-size:8px; display:none; align-items:center; justify-content:center; color:white; }
+    .gen-note-pill:hover .del-g { display:flex; }
+    .gen-results { display:flex; flex-direction:column; gap:7px; margin-top:12px; max-height:400px; overflow-y:auto; }
+    .gen-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); transition:all 0.18s; }
+    .gen-row:hover { border-color:rgba(192,132,252,0.3); background:var(--surface3); }
+    .gen-row-num { font-size:11px; color:var(--text3); font-weight:700; width:20px; flex-shrink:0; }
+    .gen-row-notes { display:flex; gap:4px; flex-wrap:wrap; flex:1; }
+    .gen-note-badge { padding:3px 8px; border-radius:5px; font-size:12px; font-weight:700; }
+    .gen-row-actions { display:flex; gap:5px; flex-shrink:0; }
+    .gen-btn { padding:5px 11px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; border:none; transition:all 0.15s; }
+    .gen-btn-load { background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.3); color:var(--accent); }
+    .gen-btn-load:hover { background:rgba(192,132,252,0.25); }
+    .gen-btn-play { background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.3); color:var(--accent3); }
+    .gen-btn-play:hover { background:rgba(52,211,153,0.25); }
+
+    /* PLAYBACK BAR */
+    .playback-bar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 22px; display:flex; align-items:center; gap:16px; position:sticky; bottom:16px; backdrop-filter:blur(20px); box-shadow:0 8px 32px rgba(0,0,0,0.45); }
+    .play-btn { width:54px; height:54px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 18px rgba(192,132,252,0.4); transition:all 0.2s; flex-shrink:0; }
+    .play-btn:hover { transform:scale(1.08); box-shadow:0 6px 24px rgba(192,132,252,0.5); }
+    .play-btn.playing { background:linear-gradient(135deg,#f87171,#ef4444); box-shadow:0 4px 18px rgba(248,113,113,0.4); }
+    .loop-btn { width:40px; height:40px; border-radius:50%; border:2px solid var(--border); background:var(--surface2); color:var(--text3); font-size:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; }
+    .loop-btn.active { border-color:var(--accent3); color:var(--accent3); background:rgba(52,211,153,0.1); box-shadow:0 0 12px rgba(52,211,153,0.25); }
+    .playback-info { flex:1; min-width:0; }
+    .now-label { font-size:10px; color:var(--text3); font-weight:600; letter-spacing:1px; }
+    .now-note { font-size:28px; font-weight:800; color:var(--accent); min-height:34px; transition:all 0.08s; }
+    .progress-wrap { width:100%; height:5px; background:var(--surface3); border-radius:3px; margin-top:7px; }
+    .progress-bar { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 0.12s linear; width:0%; }
+    .playback-stats { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+    .stat-pill { font-size:11px; font-weight:600; padding:4px 11px; border-radius:20px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); white-space:nowrap; }
+    .beat-dots { display:flex; gap:5px; align-items:center; }
+    .beat-dot { width:7px; height:7px; border-radius:50%; background:var(--surface3); transition:all 0.1s; }
+    .beat-dot.on { background:var(--accent); box-shadow:0 0 7px var(--glow); transform:scale(1.3); }
+
+    /* VIZ */
+    .viz-wrap { display:flex; align-items:flex-end; gap:2px; height:30px; padding:0 4px; }
+    .viz-bar { flex:1; background:rgba(192,132,252,0.25); border-radius:2px 2px 0 0; transition:height 0.05s,background 0.05s; min-height:2px; }
+
+    /* MODAL */
+    .modal-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.72); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:all 0.25s; }
+    .modal-overlay.open { opacity:1; pointer-events:auto; }
+    .modal { background:var(--surface); border:1px solid rgba(192,132,252,0.3); border-radius:var(--radius); padding:26px; width:360px; max-width:95vw; transform:translateY(20px); transition:transform 0.25s; box-shadow:0 16px 48px rgba(0,0,0,0.5); }
+    .modal-overlay.open .modal { transform:translateY(0); }
+    .modal h3 { font-size:17px; font-weight:700; margin-bottom:14px; }
+    .modal input { width:100%; padding:11px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:'Outfit',sans-serif; outline:none; transition:border-color 0.2s; }
+    .modal input:focus { border-color:var(--accent); }
+    .modal-actions { display:flex; gap:8px; margin-top:14px; justify-content:flex-end; }
+
+    /* TOAST */
+    .toast { position:fixed; bottom:96px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--surface); border:1px solid rgba(52,211,153,0.4); color:var(--accent3); padding:9px 20px; border-radius:30px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:all 0.28s; z-index:300; white-space:nowrap; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎵</div>
+    <div class="logo-text">Raag <span>Studio</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="viz-wrap" id="vizBars"></div>
+    <div class="header-badge">ALANKAR PRACTICE</div>
+  </div>
+</header>
+
+<div class="app">
+
+  <!-- ═══════════ LEFT PANEL ═══════════ -->
+  <div class="left-panel">
+
+    <div class="card">
+      <div class="card-title">Base Pitch (Sa)</div>
+      <div class="pitch-grid" id="pitchGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Starting Octave</div>
+      <div class="octave-selector">
+        <button class="oct-btn" data-oct="-1" onclick="setOctave(-1)">Mandra <span class="oct-hi">Low</span></button>
+        <button class="oct-btn active" data-oct="0" onclick="setOctave(0)">Madhya <span class="oct-hi">Mid</span></button>
+        <button class="oct-btn" data-oct="1" onclick="setOctave(1)">Taar <span class="oct-hi">High</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tempo</div>
+      <div class="tempo-display">
+        <div>
+          <div class="tempo-value" id="tempoDisplay">80</div>
+          <div class="tempo-label">BPM</div>
+        </div>
+        <div class="tempo-btns">
+          <button class="tempo-adj" onclick="adjustTempo(-5)">−</button>
+          <button class="tempo-adj" onclick="adjustTempo(5)">+</button>
+        </div>
+      </div>
+      <input type="range" id="tempoSlider" min="30" max="300" value="80" oninput="setTempo(this.value)" />
+      <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--text3)">
+        <span>Vilambit 30</span><span>Drut 300</span>
+      </div>
+    </div>
+
+    <!-- NOTE OPTIONS: Duration + Octave offset -->
+    <div class="card">
+      <div class="card-title">Next Note Options</div>
+      <div class="note-opts-grid">
+        <div>
+          <div class="opts-label">Duration</div>
+          <div class="seg-btns" id="durBtns">
+            <button class="seg-btn" data-dur="2" onclick="setNextDur(2)" title="Half note – holds 2 beats">½♩</button>
+            <button class="seg-btn active-dur" data-dur="1" onclick="setNextDur(1)" title="Quarter note – 1 beat">♩</button>
+            <button class="seg-btn" data-dur="0.5" onclick="setNextDur(0.5)" title="Eighth note – half beat">♪×2</button>
+          </div>
+        </div>
+        <div>
+          <div class="opts-label">Octave Shift</div>
+          <div class="seg-btns" id="octOffBtns">
+            <button class="seg-btn" data-off="-1" onclick="setNextOct(-1)">₋ Low</button>
+            <button class="seg-btn active-oct" data-off="0" onclick="setNextOct(0)">Mid</button>
+            <button class="seg-btn" data-off="1" onclick="setNextOct(1)">⁺ Hi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Direction</div>
+      <div class="direction-selector">
+        <button class="dir-btn active" data-dir="up" onclick="setDirection('up')">↑ Aaroha</button>
+        <button class="dir-btn" data-dir="down" onclick="setDirection('down')">↓ Avroha</button>
+        <button class="dir-btn" data-dir="both" onclick="setDirection('both')">↕ Both</button>
+      </div>
+      <div class="repeat-row">
+        <button class="tempo-adj" onclick="adjustRepeats(-1)">−</button>
+        <div class="repeat-val" id="repeatVal">3</div>
+        <button class="tempo-adj" onclick="adjustRepeats(1)">+</button>
+        <span style="font-size:11px;color:var(--text3)">cycles</span>
+        <button class="loop-pill" id="loopPill" onclick="toggleLoop()">∞ Loop OFF</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Instrument Sound</div>
+      <div class="wave-selector">
+        <button class="wave-btn active" data-wave="sitar" onclick="setWave('sitar')">🎸 Sitar</button>
+        <button class="wave-btn" data-wave="flute" onclick="setWave('flute')">🎵 Bansuri</button>
+        <button class="wave-btn" data-wave="sarangi" onclick="setWave('sarangi')">🎻 Sarangi</button>
+        <button class="wave-btn" data-wave="harmonium" onclick="setWave('harmonium')">🎹 Harmonium</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tanpura Drone</div>
+      <div class="tanpura-row">
+        <label class="tanpura-toggle">
+          <input type="checkbox" id="tanpuraToggle" onchange="toggleTanpura()" />
+          <span class="t-slider"></span>
+        </label>
+        <span style="font-size:13px;font-weight:500;color:var(--text2)">Enable Tanpura</span>
+        <select id="tanpuraTuning" onchange="restartTanpura()" style="margin-left:auto;background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;outline:none">
+          <option value="sa-pa">Sa–Pa</option>
+          <option value="sa-ma">Sa–Ma</option>
+          <option value="sa-ni">Sa–Ni</option>
+        </select>
+      </div>
+      <input type="range" id="tanpuraVol" min="0" max="100" value="30" oninput="setTanpuraVol(this.value)" />
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text3)"><span>Soft</span><span>Loud</span></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">My Alankars</div>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openSaveModal()">💾 Save</button>
+      </div>
+      <div class="saved-list" id="savedList">
+        <div style="font-size:12px;color:var(--text3);text-align:center;padding:10px">No saved alankars yet</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ RIGHT PANEL ═══════════ -->
+  <div class="right-panel">
+
+    <!-- SWARA PALETTE -->
+    <div class="card">
+      <div class="card-title">Swara Palette <span style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;margin-left:4px">— click to add to pattern</span></div>
+      <div class="swara-palette" id="swaraPalette"></div>
+    </div>
+
+    <!-- PATTERN BUILDER -->
+    <div class="card">
+      <div class="card-title">Pattern Builder</div>
+      <div class="pattern-track" id="patternTrack"></div>
+      <div style="margin-top:9px">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Full Sequence Preview</div>
+        <div class="flow-notes" id="flowNotes"></div>
+      </div>
+      <div class="pattern-actions">
+        <button class="btn btn-ghost" onclick="undoLast()">↩ Undo</button>
+        <button class="btn btn-danger" onclick="clearPattern()">✕ Clear</button>
+        <button class="btn btn-ghost" onclick="reversePattern()">⇄ Reverse</button>
+        <button class="btn btn-primary" id="buildPlayBtn" onclick="togglePlay()">▶ Play</button>
+      </div>
+    </div>
+
+    <!-- ═══ PATTERN GENERATOR ═══ -->
+    <div class="card">
+      <div class="card-title">Alankar Pattern Generator <span style="font-weight:400;color:var(--accent3);font-size:10px;text-transform:none;letter-spacing:0;margin-left:6px;background:rgba(52,211,153,0.1);padding:2px 7px;border-radius:10px;border:1px solid rgba(52,211,153,0.2)">NEW</span></div>
+
+      <!-- Thaat Selector -->
+      <div class="thaat-select-row">
+        <select class="thaat-select" id="thaatSelect" onchange="onThaatChange()">
+          <option value="Bilawal">Bilawal — S R G m P D N S'</option>
+          <option value="Khamaj">Khamaj — S R G m P D n S'</option>
+          <option value="Kafi">Kafi — S R g m P D n S'</option>
+          <option value="Asavari">Asavari — S R g m P d n S'</option>
+          <option value="Bhairavi">Bhairavi — S r g m P d n S'</option>
+          <option value="Bhairav">Bhairav — S r G m P d N S'</option>
+          <option value="Kalyan">Kalyan — S R G M P D N S'</option>
+          <option value="Marwa">Marwa — S r G M P D N S'</option>
+          <option value="Poorvi">Poorvi — S r G M P d N S'</option>
+          <option value="Todi">Todi — S r g M P d N S'</option>
+        </select>
+        <button class="btn btn-ghost" onclick="clearGenInput()" style="flex-shrink:0">Clear Input</button>
+      </div>
+
+      <!-- Thaat Notes Strip (clickable) -->
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Thaat Scale — click notes to build input pattern</div>
+      <div class="thaat-notes-strip" id="thaatNotesStrip"></div>
+
+      <!-- Generator Input Pattern -->
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Your Input Pattern</div>
+      <div class="gen-input-row">
+        <div class="gen-input-track" id="genInputTrack"></div>
+      </div>
+
+      <!-- Controls Row -->
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn btn-gold" onclick="generateShifts()" style="flex-shrink:0">⚡ Generate All Shifts</button>
+        <button class="btn btn-success" onclick="playAllShifts()" style="flex-shrink:0" id="genPlayAllBtn">▶ Play All Shifts</button>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+          <span style="font-size:11px;color:var(--text3)">Reps/shift:</span>
+          <button class="tempo-adj" style="width:26px;height:26px;font-size:14px" onclick="adjustGenReps(-1)">−</button>
+          <span id="genRepsVal" style="font-size:14px;font-weight:700;width:22px;text-align:center">2</span>
+          <button class="tempo-adj" style="width:26px;height:26px;font-size:14px" onclick="adjustGenReps(1)">+</button>
+        </div>
+      </div>
+
+      <!-- Generated Results -->
+      <div class="gen-results" id="genResults">
+        <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">
+          Select a thaat, build an input pattern, then click ⚡ Generate
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESETS -->
+    <div class="card">
+      <div class="card-title">Preset Alankars</div>
+      <div class="presets-grid" id="presetsGrid"></div>
+    </div>
+
+    <!-- PLAYBACK BAR -->
+    <div class="playback-bar">
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+      <button class="loop-btn" id="loopBtn" onclick="toggleLoop()" title="Toggle Loop (L)">∞</button>
+      <div class="playback-info">
+        <div class="now-label">NOW PLAYING</div>
+        <div class="now-note" id="nowNote">—</div>
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;align-items:center">
+        <div class="beat-dots" id="beatDots"></div>
+        <div class="stat-pill" id="statPill">Ready</div>
+      </div>
+      <div class="playback-stats">
+        <div class="stat-pill" id="tempoPill">80 BPM</div>
+        <div class="stat-pill" id="pitchPill">C (Sa)</div>
+        <div class="stat-pill" id="cyclePill">Cycle 0/3</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SAVE MODAL -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal">
+    <h3>💾 Save Alankar</h3>
+    <input type="text" id="saveNameInput" placeholder="Name your alankar…" maxlength="40" />
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeSaveModal()">Cancel</button>
+      <button class="btn btn-success" onclick="confirmSave()">Save</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════
+const SWARAS = [
+  { id:'S',  label:'S',  full:'Sa',         semit:0,  type:'pa-sa'  },
+  { id:'r',  label:'r',  full:'Komal Re',   semit:1,  type:'komal'  },
+  { id:'R',  label:'R',  full:'Shuddh Re',  semit:2,  type:'shuddh' },
+  { id:'g',  label:'g',  full:'Komal Ga',   semit:3,  type:'komal'  },
+  { id:'G',  label:'G',  full:'Shuddh Ga',  semit:4,  type:'shuddh' },
+  { id:'m',  label:'m',  full:'Shuddh Ma',  semit:5,  type:'shuddh' },
+  { id:'M',  label:'M',  full:'Teevra Ma',  semit:6,  type:'teevra' },
+  { id:'P',  label:'P',  full:'Pa',         semit:7,  type:'pa-sa'  },
+  { id:'d',  label:'d',  full:'Komal Dha',  semit:8,  type:'komal'  },
+  { id:'D',  label:'D',  full:'Shuddh Dha', semit:9,  type:'shuddh' },
+  { id:'n',  label:'n',  full:'Komal Ni',   semit:10, type:'komal'  },
+  { id:'N',  label:'N',  full:'Shuddh Ni',  semit:11, type:'shuddh' },
+  { id:"S'", label:"S'", full:'Taar Sa',    semit:12, type:'pa-sa'  },
+];
+
+// 10 Thaats of Hindustani music
+const THAATS = {
+  Bilawal: ['S','R','G','m','P','D','N',"S'"],
+  Khamaj:  ['S','R','G','m','P','D','n',"S'"],
+  Kafi:    ['S','R','g','m','P','D','n',"S'"],
+  Asavari: ['S','R','g','m','P','d','n',"S'"],
+  Bhairavi:['S','r','g','m','P','d','n',"S'"],
+  Bhairav: ['S','r','G','m','P','d','N',"S'"],
+  Kalyan:  ['S','R','G','M','P','D','N',"S'"],
+  Marwa:   ['S','r','G','M','P','D','N',"S'"],
+  Poorvi:  ['S','r','G','M','P','d','N',"S'"],
+  Todi:    ['S','r','g','M','P','d','N',"S'"],
+};
+
+const PRESETS = [
+  { name:'Alankaar 1 – Sa Re Ga Ma', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1}], tags:['Basic'] },
+  { name:'Full Saptak', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Full Scale'] },
+  { name:'Yaman Aroha', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Yaman','Raga'] },
+  { name:'Bhairav Aroha', notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Bhairav','Raga'] },
+  { name:'Bhairavi Aroha', notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Bhairavi','Raga'] },
+  { name:'3-Note Groups', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}], tags:['Ornament'] },
+  { name:'Gamak Pattern', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1}], tags:['Gamak','Advanced'] },
+  { name:'Sa Pa Sa Drone', notes:[{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'P',o:0,dur:1},{id:'S',o:0,dur:1}], tags:['Drone'] },
+  { name:'Skip Pattern', notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1}], tags:['Advanced'] },
+  { name:'Mixed Durations', notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:2},{id:'m',o:0,dur:0.5},{id:'m',o:0,dur:0.5}], tags:['Rhythm','Mixed'] },
+];
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let state = {
+  basePitch: 0,
+  startOctave: 4,
+  tempo: 80,
+  direction: 'up',
+  repeats: 3,
+  wave: 'sitar',
+  pattern: [],
+  nextOctOffset: 0,
+  nextDur: 1,
+  playing: false,
+  loop: false,
+  tanpuraOn: false,
+  tanpuraVol: 0.3,
+  savedAlankars: JSON.parse(localStorage.getItem('raagStudioAlankars2') || '[]'),
+  genInput: [],
+  generatedShifts: [],
+  genReps: 2,
+};
+
+let audioCtx = null;
+let tanpuraNodes = [];
+let playQueue = [];
+let playIdx = 0;
+let playTimerId = null;
+let beatPhase = 0;
+
+// ═══════════════════════════════════════════════════════
+//  AUDIO ENGINE — Improved Synthesis
+// ═══════════════════════════════════════════════════════
+function ensureAudio() {
+  if (!audioCtx || audioCtx.state === 'closed') audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function noteFreq(semit, octave) {
+  const midi = (octave + 1) * 12 + semit;
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+function playNote(freq, dur, t) {
+  if (!audioCtx) return;
+  switch (state.wave) {
+    case 'sitar':    playSitar(freq, dur, t);    break;
+    case 'flute':    playFlute(freq, dur, t);    break;
+    case 'sarangi':  playSarangi(freq, dur, t);  break;
+    case 'harmonium':playHarmonium(freq, dur, t);break;
+    default:         playSitar(freq, dur, t);
+  }
+}
+
+// ── SITAR — Karplus-Strong plucked string ──────────────
+function playSitar(freq, dur, t) {
+  const sr = audioCtx.sampleRate;
+  const N = Math.max(2, Math.round(sr / freq));
+  const bufLen = Math.ceil(sr * Math.min(dur + 0.8, 4));
+  const buf = audioCtx.createBuffer(1, bufLen, sr);
+  const d = buf.getChannelData(0);
+
+  // Noise burst excitation
+  for (let i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
+
+  // Karplus-Strong averaging loop — damping tuned for sitar-like decay
+  const damp = 0.4985 + 0.0008 * Math.log2(freq / 80);
+  for (let i = N; i < bufLen; i++) {
+    d[i] = damp * (d[i - N] + d[i - Math.max(1, i - N + 1 < bufLen ? i - N + 1 : i - N)]);
+  }
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+
+  // Gentle EQ to boost mid harmonics (sitar brightness)
+  const eq = audioCtx.createBiquadFilter();
+  eq.type = 'peaking'; eq.frequency.value = freq * 3; eq.gain.value = 4; eq.Q.value = 2;
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.55, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + Math.min(dur + 0.5, 3.5));
+
+  src.connect(eq); eq.connect(g); g.connect(audioCtx.destination);
+  src.start(t);
+}
+
+// ── BANSURI (FLUTE) — Sine + breath noise ──────────────
+function playFlute(freq, dur, t) {
+  const sr = audioCtx.sampleRate;
+
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+
+  // Vibrato
+  const lfo = audioCtx.createOscillator();
+  const lfoG = audioCtx.createGain();
+  lfo.frequency.value = 5.2;
+  lfoG.gain.value = freq * 0.006;
+  lfo.connect(lfoG); lfoG.connect(osc.frequency);
+
+  // Breath noise
+  const noise = audioCtx.createBuffer(1, sr, sr);
+  const nd = noise.getChannelData(0);
+  for (let i = 0; i < sr; i++) nd[i] = Math.random() * 2 - 1;
+  const nSrc = audioCtx.createBufferSource();
+  nSrc.buffer = noise; nSrc.loop = true;
+  const nFilt = audioCtx.createBiquadFilter();
+  nFilt.type = 'bandpass'; nFilt.frequency.value = freq * 1.5; nFilt.Q.value = 8;
+  const nGain = audioCtx.createGain();
+  nGain.gain.value = 0.035;
+  nSrc.connect(nFilt); nFilt.connect(nGain);
+
+  // Harmonic overtone (gentle second)
+  const osc2 = audioCtx.createOscillator();
+  osc2.type = 'sine'; osc2.frequency.value = freq * 2;
+  const osc2G = audioCtx.createGain(); osc2G.gain.value = 0.06;
+  osc2.connect(osc2G);
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.3, t + 0.04);
+  g.gain.setValueAtTime(0.3, t + dur * 0.82);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+  osc.connect(g); nGain.connect(g); osc2G.connect(g);
+  g.connect(audioCtx.destination);
+
+  [osc, osc2, lfo].forEach(o => { o.start(t); o.stop(t + dur + 0.1); });
+  nSrc.start(t); nSrc.stop(t + dur + 0.1);
+}
+
+// ── SARANGI — Bowed string with vibrato ───────────────
+function playSarangi(freq, dur, t) {
+  // Build rich bowed-string harmonic series (1/k amplitude)
+  const H = 14;
+  const real = new Float32Array(H + 1);
+  const imag = new Float32Array(H + 1);
+  real[0] = 0;
+  for (let k = 1; k <= H; k++) {
+    real[k] = (1 / k) * (k % 2 === 0 ? 0.65 : 1.0) * Math.exp(-0.08 * k);
+  }
+  const wave = audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
+
+  const osc = audioCtx.createOscillator();
+  osc.setPeriodicWave(wave);
+  osc.frequency.value = freq;
+
+  // Bow vibrato LFO (starts after attack)
+  const lfo = audioCtx.createOscillator();
+  const lfoG = audioCtx.createGain();
+  lfo.frequency.value = 5.8;
+  lfoG.gain.setValueAtTime(0, t);
+  lfoG.gain.linearRampToValueAtTime(freq * 0.009, t + dur * 0.35);
+  lfo.connect(lfoG); lfoG.connect(osc.frequency);
+
+  // Rosin/bow noise component
+  const noise = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
+  const nd = noise.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  const nSrc = audioCtx.createBufferSource();
+  nSrc.buffer = noise; nSrc.loop = true;
+  const nFilt = audioCtx.createBiquadFilter();
+  nFilt.type = 'bandpass'; nFilt.frequency.value = freq * 4; nFilt.Q.value = 12;
+  const nGain = audioCtx.createGain(); nGain.gain.value = 0.018;
+  nSrc.connect(nFilt); nFilt.connect(nGain);
+
+  const body = audioCtx.createBiquadFilter();
+  body.type = 'peaking'; body.frequency.value = 400; body.gain.value = 5; body.Q.value = 1.2;
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.28, t + 0.09);
+  g.gain.setValueAtTime(0.28, t + dur * 0.8);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+  osc.connect(body); nGain.connect(body); body.connect(g);
+  g.connect(audioCtx.destination);
+
+  [osc, lfo].forEach(o => { o.start(t); o.stop(t + dur + 0.2); });
+  nSrc.start(t); nSrc.stop(t + dur + 0.2);
+}
+
+// ── HARMONIUM — Reed synthesis with PeriodicWave ──────
+function playHarmonium(freq, dur, t) {
+  // Free reed harmonic content: strong fundamental, rich even+odd harmonics
+  // Reed instruments have relatively uniform harmonic content
+  const H = 10;
+  const real = new Float32Array(H + 1);
+  const imag = new Float32Array(H + 1);
+  real[0] = 0;
+  // Harmonium reed profile: strong 1st & 2nd, gradually falling
+  const hProfile = [0, 1.0, 0.75, 0.5, 0.35, 0.22, 0.15, 0.09, 0.06, 0.04, 0.02];
+  for (let k = 1; k <= H; k++) real[k] = hProfile[k];
+  const wave = audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
+
+  const osc = audioCtx.createOscillator();
+  osc.setPeriodicWave(wave);
+  osc.frequency.value = freq;
+
+  // Slight second oscillator detuned (bellows chorusing)
+  const osc2 = audioCtx.createOscillator();
+  osc2.setPeriodicWave(wave);
+  osc2.frequency.value = freq * 1.0008;
+  const osc2G = audioCtx.createGain(); osc2G.gain.value = 0.25;
+  osc2.connect(osc2G);
+
+  // Low-pass: remove harshness above ~6kHz
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = Math.min(freq * 10, 6000); lp.Q.value = 0.6;
+
+  // Body resonance bump (box/cabinet sound)
+  const body = audioCtx.createBiquadFilter();
+  body.type = 'peaking'; body.frequency.value = 300; body.gain.value = 4; body.Q.value = 0.8;
+
+  const g = audioCtx.createGain();
+  // Bellows: slow attack, flat sustain, crisp release
+  g.gain.setValueAtTime(0.001, t);
+  g.gain.linearRampToValueAtTime(0.38, t + 0.07);
+  g.gain.setValueAtTime(0.36, t + dur * 0.88);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+  osc.connect(lp); osc2G.connect(lp);
+  lp.connect(body); body.connect(g);
+  g.connect(audioCtx.destination);
+
+  [osc, osc2].forEach(o => { o.start(t); o.stop(t + dur + 0.1); });
+}
+
+// ═══════════════════════════════════════════════════════
+//  TANPURA DRONE — Improved (Sa-Pa-Sa or Sa-Ma-Sa)
+// ═══════════════════════════════════════════════════════
+let tanpuraCycle = null;
+
+function startTanpura() {
+  stopTanpura();
+  ensureAudio();
+  const tuning = document.getElementById('tanpuraTuning').value;
+  const semits = tuning === 'sa-pa' ? [0, 7, 12, 0] :
+                 tuning === 'sa-ma' ? [0, 5, 12, 0] :
+                                      [0, 11, 12, 0]; // sa-ni
+
+  const cycle = 2.0; // seconds per full pluck cycle
+  let phase = 0;
+
+  function pluckCycle() {
+    if (!state.tanpuraOn) return;
+    const now = audioCtx.currentTime;
+    const pluckDur = 1.8;
+    const baseOct = state.startOctave - 1;
+
+    semits.forEach((s, i) => {
+      const oct = s === 0 && i === 3 ? state.startOctave : baseOct;
+      const freq = noteFreq(state.basePitch + (s % 12), s === 12 ? state.startOctave : oct);
+      const delay = i * (cycle / semits.length);
+
+      // Build harmonium-style tanpura string with decay
+      const H2 = 6;
+      const r2 = new Float32Array(H2 + 1); const im2 = new Float32Array(H2 + 1);
+      r2[0] = 0;
+      [0, 1.0, 0.45, 0.22, 0.12, 0.06, 0.03].forEach((v, k) => { if (k <= H2) r2[k] = v; });
+      const pw = audioCtx.createPeriodicWave(r2, im2, { disableNormalization: false });
+
+      const osc = audioCtx.createOscillator();
+      osc.setPeriodicWave(pw);
+      osc.frequency.value = freq;
+
+      const g = audioCtx.createGain();
+      const vol = state.tanpuraVol * 0.22 * (i === 0 || i === 3 ? 1 : 0.7);
+      g.gain.setValueAtTime(0, now + delay);
+      g.gain.linearRampToValueAtTime(vol, now + delay + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, now + delay + pluckDur);
+
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(now + delay); osc.stop(now + delay + pluckDur + 0.1);
+      tanpuraNodes.push({ osc, g });
+    });
+
+    tanpuraCycle = setTimeout(pluckCycle, cycle * 1000);
+  }
+  pluckCycle();
+}
+
+function stopTanpura() {
+  clearTimeout(tanpuraCycle);
+  tanpuraNodes.forEach(n => { try { n.osc.stop(); } catch(e){} });
+  tanpuraNodes = [];
+}
+
+function toggleTanpura() {
+  state.tanpuraOn = document.getElementById('tanpuraToggle').checked;
+  if (state.tanpuraOn) { ensureAudio(); startTanpura(); }
+  else stopTanpura();
+}
+function restartTanpura() {
+  if (state.tanpuraOn) startTanpura();
+}
+function setTanpuraVol(v) { state.tanpuraVol = v / 100; }
+
+// ═══════════════════════════════════════════════════════
+//  SEQUENCE BUILDER
+// ═══════════════════════════════════════════════════════
+function buildSequence(pattern, direction, repeats) {
+  if (!pattern.length) return [];
+  let base = pattern.map(p => ({ ...p }));
+  let seq = [];
+  if (direction === 'up') {
+    for (let i = 0; i < repeats; i++) seq = seq.concat(base);
+  } else if (direction === 'down') {
+    const rev = [...base].reverse();
+    for (let i = 0; i < repeats; i++) seq = seq.concat(rev);
+  } else {
+    const rev = [...base].reverse();
+    for (let i = 0; i < repeats; i++) { seq = seq.concat(base); seq = seq.concat(rev); }
+  }
+  return seq;
+}
+
+// ═══════════════════════════════════════════════════════
+//  PLAYBACK ENGINE
+// ═══════════════════════════════════════════════════════
+function togglePlay() {
+  state.playing ? stopPlay() : startPlay();
+}
+
+function startPlay() {
+  if (!state.pattern.length) { showToast('Add notes to the pattern first!'); return; }
+  ensureAudio();
+  if (state.tanpuraOn) startTanpura();
+  state.playing = true;
+  playQueue = buildSequence(state.pattern, state.direction, state.repeats);
+  playIdx = 0; beatPhase = 0;
+  updatePlayBtn();
+  renderFlowNotes();
+  scheduleNext();
+}
+
+function startPlayCustom(queue) {
+  ensureAudio();
+  if (state.tanpuraOn) startTanpura();
+  state.playing = true;
+  playQueue = queue;
+  playIdx = 0; beatPhase = 0;
+  updatePlayBtn();
+  scheduleNext();
+}
+
+function stopPlay() {
+  state.playing = false;
+  clearTimeout(playTimerId);
+  updatePlayBtn();
+  document.getElementById('nowNote').textContent = '—';
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('statPill').textContent = 'Ready';
+  document.getElementById('cyclePill').textContent = `Cycle 0/${state.repeats}`;
+  document.querySelectorAll('.pattern-note').forEach(el => el.classList.remove('playing-note'));
+  document.querySelectorAll('.swara-chip').forEach(el => el.classList.remove('active-note'));
+  document.querySelectorAll('.flow-note').forEach(el => el.classList.remove('active','played'));
+  updateBeatDots(-1);
+  vizTarget = Array(VIZ_BARS).fill(2);
+}
+
+function scheduleNext() {
+  if (!state.playing) return;
+
+  if (playIdx >= playQueue.length) {
+    if (state.loop) {
+      playIdx = 0;
+    } else {
+      stopPlay();
+      showToast('Alankar complete! 🎵');
+      return;
+    }
+  }
+
+  const note = playQueue[playIdx];
+  const sw = getSw(note.id);
+  if (!sw) { playIdx++; scheduleNext(); return; }
+
+  const freq = noteFreq(state.basePitch + sw.semit, state.startOctave + (note.o || 0));
+  const beatDur = 60 / state.tempo;
+  const noteDur = beatDur * (note.dur || 1);
+
+  playNote(freq, noteDur * 0.9, audioCtx.currentTime);
+
+  // ── UI Updates ──
+  const octMark = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
+  const durMark = note.dur === 2 ? ' ·' : note.dur === 0.5 ? '·' : '';
+  document.getElementById('nowNote').textContent = octMark + sw.label + durMark;
+
+  highlightPatternNote(playIdx % state.pattern.length);
+  highlightFlowNote(playIdx);
+
+  const pct = ((playIdx + 1) / playQueue.length) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  const cycleNum = Math.min(Math.floor(playIdx / state.pattern.length) + 1, state.direction === 'both' ? state.repeats * 2 : state.repeats);
+  const totalCycles = state.direction === 'both' ? state.repeats * 2 : state.repeats;
+  document.getElementById('cyclePill').textContent = `Cycle ${cycleNum}/${totalCycles}`;
+  document.getElementById('statPill').textContent = `Note ${(playIdx % state.pattern.length) + 1}/${state.pattern.length}`;
+
+  beatPhase = (beatPhase + 1) % 4;
+  updateBeatDots(beatPhase);
+  vizTarget[Math.floor(Math.random() * VIZ_BARS)] = 18 + Math.random() * 26;
+
+  playIdx++;
+  playTimerId = setTimeout(scheduleNext, noteDur * 1000);
+}
+
+function highlightPatternNote(idx) {
+  document.querySelectorAll('.pattern-note').forEach((el, i) => el.classList.toggle('playing-note', i === idx));
+  const note = state.pattern[idx];
+  if (note) document.querySelectorAll('.swara-chip').forEach(el => el.classList.toggle('active-note', el.dataset.id === note.id));
+}
+function highlightFlowNote(idx) {
+  document.querySelectorAll('.flow-note').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+    el.classList.toggle('played', i < idx);
+  });
+}
+function updatePlayBtn() {
+  const btn = document.getElementById('playBtn');
+  const btn2 = document.getElementById('buildPlayBtn');
+  btn.textContent = state.playing ? '⏹' : '▶';
+  btn.classList.toggle('playing', state.playing);
+  if (btn2) { btn2.textContent = state.playing ? '⏹ Stop' : '▶ Play'; btn2.className = state.playing ? 'btn btn-danger' : 'btn btn-primary'; }
+}
+
+// ═══════════════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════════════
+function setTempo(v) {
+  state.tempo = parseInt(v);
+  document.getElementById('tempoDisplay').textContent = state.tempo;
+  document.getElementById('tempoSlider').value = state.tempo;
+  document.getElementById('tempoPill').textContent = state.tempo + ' BPM';
+}
+function adjustTempo(d) { setTempo(Math.max(30, Math.min(300, state.tempo + d))); }
+function adjustRepeats(d) {
+  state.repeats = Math.max(1, Math.min(20, state.repeats + d));
+  document.getElementById('repeatVal').textContent = state.repeats;
+  document.getElementById('cyclePill').textContent = `Cycle 0/${state.repeats}`;
+  renderFlowNotes();
+}
+function setDirection(dir) {
+  state.direction = dir;
+  document.querySelectorAll('.dir-btn').forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
+  renderFlowNotes();
+}
+function setOctave(oct) {
+  state.startOctave = 4 + oct;
+  document.querySelectorAll('.oct-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.oct) === oct));
+  if (state.tanpuraOn) startTanpura();
+}
+function setBasePitch(idx) {
+  state.basePitch = idx;
+  document.querySelectorAll('.pitch-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.pitch) === idx));
+  document.getElementById('pitchPill').textContent = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][idx] + ' (Sa)';
+  if (state.tanpuraOn) startTanpura();
+}
+function setWave(w) {
+  state.wave = w;
+  document.querySelectorAll('.wave-btn').forEach(b => b.classList.toggle('active', b.dataset.wave === w));
+}
+function setNextOct(off) {
+  state.nextOctOffset = off;
+  document.querySelectorAll('#octOffBtns .seg-btn').forEach(b => b.classList.toggle('active-oct', parseFloat(b.dataset.off) === off));
+}
+function setNextDur(dur) {
+  state.nextDur = dur;
+  document.querySelectorAll('#durBtns .seg-btn').forEach(b => b.classList.toggle('active-dur', parseFloat(b.dataset.dur) === dur));
+}
+function toggleLoop() {
+  state.loop = !state.loop;
+  document.getElementById('loopBtn').classList.toggle('active', state.loop);
+  document.getElementById('loopPill').textContent = state.loop ? '∞ Loop ON' : '∞ Loop OFF';
+  document.getElementById('loopPill').classList.toggle('active', state.loop);
+}
+
+// ═══════════════════════════════════════════════════════
+//  PATTERN
+// ═══════════════════════════════════════════════════════
+function getSw(id) { return SWARAS.find(s => s.id === id); }
+
+function addNote(swaraId) {
+  state.pattern.push({ id: swaraId, o: state.nextOctOffset, dur: state.nextDur });
+  renderPattern(); renderFlowNotes();
+}
+function removeNote(idx) { state.pattern.splice(idx, 1); renderPattern(); renderFlowNotes(); }
+function undoLast() { if (state.pattern.length) { state.pattern.pop(); renderPattern(); renderFlowNotes(); } }
+function clearPattern() { if (state.playing) stopPlay(); state.pattern = []; renderPattern(); renderFlowNotes(); }
+function reversePattern() { state.pattern.reverse(); renderPattern(); renderFlowNotes(); }
+
+function renderPattern() {
+  const track = document.getElementById('patternTrack');
+  track.classList.toggle('empty', !state.pattern.length);
+  track.innerHTML = '';
+  state.pattern.forEach((note, i) => {
+    const sw = getSw(note.id);
+    if (!sw) return;
+    const durClass = note.dur === 2 ? 'dur-half' : note.dur === 0.5 ? 'dur-eighth' : '';
+    const durBadge = note.dur === 2 ? '½' : note.dur === 0.5 ? '2×' : '';
+    const octBadge = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
+    const el = document.createElement('div');
+    el.className = `pattern-note ${sw.type} ${durClass}`;
+    el.title = `${sw.full}${note.dur === 2 ? ' (Half note)' : note.dur === 0.5 ? ' (Eighth note)' : ''}`;
+    el.innerHTML = `
+      <span class="oct-badge">${octBadge}</span>
+      ${sw.label}
+      <span class="dur-badge">${durBadge}</span>
+      <span class="del-x" onclick="removeNote(${i});event.stopPropagation()">✕</span>`;
+    el.onclick = () => { ensureAudio(); playNote(noteFreq(state.basePitch + sw.semit, state.startOctave + (note.o || 0)), 0.4, audioCtx.currentTime); };
+    track.appendChild(el);
+  });
+}
+
+function renderFlowNotes() {
+  const seq = buildSequence(state.pattern, state.direction, state.repeats);
+  const c = document.getElementById('flowNotes');
+  c.innerHTML = '';
+  seq.forEach((note, i) => {
+    const sw = getSw(note.id);
+    if (!sw) return;
+    const el = document.createElement('span');
+    el.className = 'flow-note';
+    el.textContent = (note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '') + sw.label;
+    c.appendChild(el);
+    if (i < seq.length - 1) { const sep = document.createElement('span'); sep.className = 'flow-sep'; sep.textContent = '·'; c.appendChild(sep); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  SWARA PALETTE
+// ═══════════════════════════════════════════════════════
+function renderSwaraPalette() {
+  const c = document.getElementById('swaraPalette');
+  c.innerHTML = '';
+  SWARAS.forEach(sw => {
+    const el = document.createElement('div');
+    el.className = `swara-chip ${sw.type}`;
+    el.dataset.id = sw.id;
+    el.innerHTML = `<span class="sn">${sw.label}</span><span class="ss">${sw.full}</span>`;
+    el.onclick = () => {
+      addNote(sw.id);
+      ensureAudio();
+      playNote(noteFreq(state.basePitch + sw.semit, state.startOctave + state.nextOctOffset), 0.35, audioCtx.currentTime);
+    };
+    c.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  PITCH GRID
+// ═══════════════════════════════════════════════════════
+function renderPitchGrid() {
+  const labels = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const grid = document.getElementById('pitchGrid');
+  grid.innerHTML = '';
+  labels.forEach((l, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'pitch-btn' + (i === 0 ? ' active' : '');
+    btn.dataset.pitch = i; btn.textContent = l;
+    btn.onclick = () => setBasePitch(i);
+    grid.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRESETS
+// ═══════════════════════════════════════════════════════
+function renderPresets() {
+  const grid = document.getElementById('presetsGrid');
+  grid.innerHTML = '';
+  PRESETS.forEach((p, idx) => {
+    const card = document.createElement('div');
+    card.className = 'preset-card';
+    const noteStr = p.notes.map(n => n.id).join('–');
+    card.innerHTML = `<div class="preset-name">${p.name}</div><div class="preset-notes">${noteStr}</div><div class="preset-tags">${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`;
+    card.onclick = () => {
+      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      if (state.playing) stopPlay();
+      state.pattern = p.notes.map(n => ({ ...n }));
+      renderPattern(); renderFlowNotes();
+      showToast(`Loaded: ${p.name}`);
+    };
+    grid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  PATTERN GENERATOR — Thaat-based shift generator
+// ═══════════════════════════════════════════════════════
+function onThaatChange() {
+  renderThaatStrip();
+  state.genInput = [];
+  renderGenInput();
+  document.getElementById('genResults').innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Select a thaat, build an input pattern, then click ⚡ Generate</div>';
+}
+
+function renderThaatStrip() {
+  const thaatName = document.getElementById('thaatSelect').value;
+  const thaatNotes = THAATS[thaatName];
+  const strip = document.getElementById('thaatNotesStrip');
+  strip.innerHTML = '';
+  thaatNotes.forEach((noteId, idx) => {
+    const sw = getSw(noteId);
+    if (!sw) return;
+    const chip = document.createElement('div');
+    chip.className = `thaat-note-chip ${sw.type}`;
+    chip.textContent = sw.label;
+    chip.title = sw.full;
+    chip.style.background = sw.type === 'komal' ? 'rgba(248,113,113,0.15)' :
+                             sw.type === 'teevra' ? 'rgba(251,191,36,0.15)' :
+                             sw.type === 'shuddh' ? 'rgba(192,132,252,0.15)' :
+                             'rgba(52,211,153,0.15)';
+    chip.style.color = sw.type === 'komal' ? '#f87171' :
+                       sw.type === 'teevra' ? '#fbbf24' :
+                       sw.type === 'shuddh' ? '#c084fc' : '#34d399';
+    chip.style.borderColor = chip.style.color.replace(')',',0.4)').replace('rgb','rgba');
+    chip.onclick = () => {
+      state.genInput.push({ id: noteId, thaatIdx: idx });
+      renderGenInput();
+      ensureAudio();
+      playNote(noteFreq(state.basePitch + sw.semit, state.startOctave), 0.3, audioCtx.currentTime);
+    };
+    strip.appendChild(chip);
+  });
+}
+
+function renderGenInput() {
+  const track = document.getElementById('genInputTrack');
+  track.classList.toggle('empty', !state.genInput.length);
+  track.innerHTML = '';
+  state.genInput.forEach((item, i) => {
+    const sw = getSw(item.id);
+    if (!sw) return;
+    const pill = document.createElement('div');
+    pill.className = `gen-note-pill ${sw.type}`;
+    pill.style.background = sw.type === 'komal' ? 'rgba(248,113,113,0.2)' :
+                             sw.type === 'teevra' ? 'rgba(251,191,36,0.2)' :
+                             sw.type === 'shuddh' ? 'rgba(192,132,252,0.2)' :
+                             'rgba(52,211,153,0.2)';
+    pill.style.color = sw.type === 'komal' ? '#f87171' :
+                       sw.type === 'teevra' ? '#fbbf24' :
+                       sw.type === 'shuddh' ? '#c084fc' : '#34d399';
+    pill.innerHTML = `${sw.label}<span class="del-g" onclick="removeGenNote(${i});event.stopPropagation()">✕</span>`;
+    track.appendChild(pill);
+  });
+}
+
+function removeGenNote(idx) { state.genInput.splice(idx, 1); renderGenInput(); }
+function clearGenInput() { state.genInput = []; renderGenInput(); }
+
+function adjustGenReps(d) {
+  state.genReps = Math.max(1, Math.min(10, state.genReps + d));
+  document.getElementById('genRepsVal').textContent = state.genReps;
+}
+
+function generateShifts() {
+  if (!state.genInput.length) { showToast('Add notes to the input pattern first!'); return; }
+
+  const thaatName = document.getElementById('thaatSelect').value;
+  const thaat = THAATS[thaatName];
+  const tLen = thaat.length; // 8 notes
+
+  // Get start position in thaat from first input note
+  const startPos = state.genInput[0].thaatIdx;
+
+  // Compute intervals (positions relative to first note)
+  const intervals = state.genInput.map(item => item.thaatIdx - startPos);
+
+  state.generatedShifts = [];
+
+  // Generate all 8 shifts (one per thaat degree)
+  for (let shift = 0; shift < tLen; shift++) {
+    const notes = intervals.map(interval => {
+      const absPos = shift + interval + (startPos > 0 ? 0 : 0);
+      // Calculate actual thaat position
+      const thaatPos = shift + interval;
+      const noteIdx = ((thaatPos % tLen) + tLen) % tLen;
+      const octaveOff = thaatPos >= 0 ? Math.floor(thaatPos / tLen) : -Math.ceil(-thaatPos / tLen);
+      return { id: thaat[noteIdx], o: octaveOff, dur: 1 };
+    });
+    state.generatedShifts.push(notes);
+  }
+
+  renderGenResults();
+  showToast(`Generated ${state.generatedShifts.length} shifts for ${thaatName}!`);
+}
+
+function renderGenResults() {
+  const c = document.getElementById('genResults');
+  c.innerHTML = '';
+  if (!state.generatedShifts.length) return;
+
+  state.generatedShifts.forEach((shift, idx) => {
+    const row = document.createElement('div');
+    row.className = 'gen-row';
+    row.innerHTML = `<div class="gen-row-num">${idx + 1}</div><div class="gen-row-notes" id="gnotes${idx}"></div><div class="gen-row-actions"><button class="gen-btn gen-btn-load" onclick="loadGenShift(${idx})">Load</button><button class="gen-btn gen-btn-play" onclick="playGenShift(${idx})">▶</button></div>`;
+    c.appendChild(row);
+
+    const notesEl = row.querySelector(`#gnotes${idx}`);
+    shift.forEach((note, ni) => {
+      const sw = getSw(note.id);
+      if (!sw) return;
+      const badge = document.createElement('span');
+      badge.className = `gen-note-badge ${sw.type}`;
+      badge.style.background = sw.type === 'komal' ? 'rgba(248,113,113,0.15)' :
+                               sw.type === 'teevra' ? 'rgba(251,191,36,0.15)' :
+                               sw.type === 'shuddh' ? 'rgba(192,132,252,0.15)' :
+                               'rgba(52,211,153,0.15)';
+      badge.style.color = sw.type === 'komal' ? '#f87171' :
+                          sw.type === 'teevra' ? '#fbbf24' :
+                          sw.type === 'shuddh' ? '#c084fc' : '#34d399';
+      badge.textContent = (note.o === 1 ? '⁺' : note.o === -1 ? '₋' : '') + sw.label;
+      notesEl.appendChild(badge);
+    });
+  });
+}
+
+function loadGenShift(idx) {
+  if (state.playing) stopPlay();
+  state.pattern = state.generatedShifts[idx].map(n => ({ ...n }));
+  renderPattern(); renderFlowNotes();
+  showToast(`Loaded Shift ${idx + 1}`);
+  document.querySelector('.pattern-track')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function playGenShift(idx) {
+  if (state.playing) stopPlay();
+  const shift = state.generatedShifts[idx];
+  const seq = [];
+  for (let r = 0; r < state.genReps; r++) seq.push(...shift);
+  ensureAudio();
+  startPlayCustom(seq);
+}
+
+function playAllShifts() {
+  if (!state.generatedShifts.length) { showToast('Generate shifts first!'); return; }
+  if (state.playing) stopPlay();
+  const fullSeq = [];
+  state.generatedShifts.forEach(shift => {
+    for (let r = 0; r < state.genReps; r++) fullSeq.push(...shift);
+  });
+  ensureAudio();
+  startPlayCustom(fullSeq);
+  showToast(`Playing all ${state.generatedShifts.length} shifts!`);
+}
+
+// ═══════════════════════════════════════════════════════
+//  SAVE / LOAD
+// ═══════════════════════════════════════════════════════
+function openSaveModal() {
+  if (!state.pattern.length) { showToast('Pattern is empty!'); return; }
+  document.getElementById('saveModal').classList.add('open');
+  document.getElementById('saveNameInput').value = '';
+  setTimeout(() => document.getElementById('saveNameInput').focus(), 50);
+}
+function closeSaveModal() { document.getElementById('saveModal').classList.remove('open'); }
+function confirmSave() {
+  const name = document.getElementById('saveNameInput').value.trim() || 'My Alankar';
+  state.savedAlankars.push({ name, pattern: [...state.pattern], tempo: state.tempo, direction: state.direction, repeats: state.repeats });
+  localStorage.setItem('raagStudioAlankars2', JSON.stringify(state.savedAlankars));
+  closeSaveModal(); renderSaved(); showToast(`Saved: ${name}`);
+}
+function deleteSaved(idx) {
+  state.savedAlankars.splice(idx, 1);
+  localStorage.setItem('raagStudioAlankars2', JSON.stringify(state.savedAlankars));
+  renderSaved();
+}
+function loadSaved(idx) {
+  const a = state.savedAlankars[idx];
+  if (!a) return;
+  if (state.playing) stopPlay();
+  state.pattern = [...a.pattern];
+  if (a.tempo) setTempo(a.tempo);
+  if (a.direction) setDirection(a.direction);
+  if (a.repeats) { state.repeats = a.repeats; document.getElementById('repeatVal').textContent = state.repeats; }
+  renderPattern(); renderFlowNotes(); showToast(`Loaded: ${a.name}`);
+}
+function renderSaved() {
+  const list = document.getElementById('savedList');
+  if (!state.savedAlankars.length) { list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px">No saved alankars yet</div>'; return; }
+  list.innerHTML = '';
+  state.savedAlankars.forEach((a, i) => {
+    const item = document.createElement('div');
+    item.className = 'saved-item';
+    item.innerHTML = `<div style="flex:1"><div class="saved-name">${a.name}</div><div class="saved-notes">${a.pattern.map(n=>n.id).join(' ')}</div></div><button class="icon-btn play" onclick="loadSaved(${i});event.stopPropagation()" title="Load">▶</button><button class="icon-btn" onclick="deleteSaved(${i});event.stopPropagation()" title="Delete">✕</button>`;
+    item.onclick = () => loadSaved(i);
+    list.appendChild(item);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  BEAT DOTS & VIZ
+// ═══════════════════════════════════════════════════════
+function initBeatDots() {
+  const c = document.getElementById('beatDots');
+  c.innerHTML = '';
+  for (let i = 0; i < 4; i++) { const d = document.createElement('div'); d.className = 'beat-dot'; d.id = `bd${i}`; c.appendChild(d); }
+}
+function updateBeatDots(active) { for (let i = 0; i < 4; i++) document.getElementById(`bd${i}`)?.classList.toggle('on', i === active); }
+
+const VIZ_BARS = 16;
+let vizTarget = Array(VIZ_BARS).fill(2);
+let vizCurrent = Array(VIZ_BARS).fill(2);
+
+function initViz() {
+  const c = document.getElementById('vizBars');
+  c.innerHTML = '';
+  for (let i = 0; i < VIZ_BARS; i++) { const b = document.createElement('div'); b.className = 'viz-bar'; b.id = `vb${i}`; c.appendChild(b); }
+  animViz();
+}
+function animViz() {
+  for (let i = 0; i < VIZ_BARS; i++) {
+    vizCurrent[i] += (vizTarget[i] - vizCurrent[i]) * 0.18;
+    const el = document.getElementById(`vb${i}`);
+    if (el) {
+      el.style.height = vizCurrent[i] + 'px';
+      el.style.background = state.playing ? `hsl(${265 + i * 7}, 75%, 65%)` : 'rgba(192,132,252,0.18)';
+    }
+    vizTarget[i] = Math.max(2, vizTarget[i] * 0.83 + (state.playing ? Math.random() * 2 : 0));
+  }
+  requestAnimationFrame(animViz);
+}
+
+// ═══════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ═══════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  if (e.code === 'Backspace') { e.preventDefault(); undoLast(); }
+  if (e.code === 'Delete') { e.preventDefault(); clearPattern(); }
+  if (e.code === 'ArrowUp') { e.preventDefault(); adjustTempo(5); }
+  if (e.code === 'ArrowDown') { e.preventDefault(); adjustTempo(-5); }
+  if (e.code === 'KeyL') toggleLoop();
+});
+
+// Modal
+document.getElementById('saveNameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmSave();
+  if (e.key === 'Escape') closeSaveModal();
+});
+document.getElementById('saveModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeSaveModal(); });
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+function init() {
+  renderPitchGrid();
+  renderSwaraPalette();
+  renderPresets();
+  renderPattern();
+  renderFlowNotes();
+  renderSaved();
+  renderThaatStrip();
+  initBeatDots();
+  initViz();
+  setTempo(80);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
