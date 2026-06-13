@@ -97,6 +97,17 @@
     input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:50%; box-shadow:0 0 8px var(--glow); cursor:pointer; transition:transform 0.15s; }
     input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
 
+    /* SPEED BTNS */
+    .speed-btns { display:flex; gap:6px; margin-top:10px; }
+    .speed-btn { flex:1; padding:7px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:center; }
+    .speed-btn:hover { background:var(--surface3); color:var(--text); border-color:rgba(192,132,252,0.4); }
+
+    /* BEAT TYPE */
+    .beat-type-row { display:flex; gap:6px; margin-top:10px; }
+    .beat-type-btn { flex:1; padding:7px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:center; }
+    .beat-type-btn:hover { background:var(--surface3); color:var(--text); }
+    .beat-type-btn.active { background:rgba(192,132,252,0.15); border-color:var(--accent); color:var(--accent); }
+
     /* NOTE OPTIONS BAR */
     .note-opts-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .opts-label { font-size:10px; color:var(--text3); font-weight:600; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px; }
@@ -124,6 +135,10 @@
     .wave-btn { padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
     .wave-btn:hover { background:var(--surface3); color:var(--text); }
     .wave-btn.active { background:rgba(52,211,153,0.1); border-color:var(--accent3); color:var(--accent3); }
+    .wave-btn .wave-sub { display:block; font-size:9px; opacity:0.6; margin-top:2px; }
+    /* SAMPLE STATUS */
+    .sample-status { font-size:10px; padding:4px 10px; border-radius:8px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2); color:var(--gold); margin-top:6px; text-align:center; }
+    .sample-status.loaded { background:rgba(52,211,153,0.1); border-color:rgba(52,211,153,0.2); color:var(--accent3); }
 
     /* TANPURA */
     .tanpura-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
@@ -203,14 +218,22 @@
     .btn-gold:hover { transform:translateY(-1px); }
 
     /* PRESETS GRID */
-    .presets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:9px; }
+    .presets-filter { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+    .filter-btn { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:var(--text3); transition:all 0.2s; }
+    .filter-btn:hover { border-color:rgba(192,132,252,0.3); color:var(--text); }
+    .filter-btn.active { background:rgba(192,132,252,0.15); border-color:var(--accent); color:var(--accent); }
+    .presets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:9px; max-height:520px; overflow-y:auto; }
     .preset-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:13px; cursor:pointer; transition:all 0.2s; }
     .preset-card:hover { border-color:rgba(192,132,252,0.35); background:var(--surface3); transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.3); }
     .preset-card.selected { border-color:var(--accent); background:rgba(192,132,252,0.07); }
+    .preset-card.hidden { display:none; }
     .preset-name { font-size:13px; font-weight:600; margin-bottom:5px; }
     .preset-notes { font-size:11px; color:var(--text3); font-family:monospace; line-height:1.5; }
     .preset-tags { display:flex; gap:4px; margin-top:7px; flex-wrap:wrap; }
     .tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; background:rgba(129,140,248,0.1); border:1px solid rgba(129,140,248,0.2); color:var(--accent2); }
+    .tag.beginner { background:rgba(52,211,153,0.1); border-color:rgba(52,211,153,0.25); color:var(--accent3); }
+    .tag.intermediate { background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.25); color:var(--gold); }
+    .tag.advanced { background:rgba(248,113,113,0.1); border-color:rgba(248,113,113,0.25); color:var(--danger); }
 
     /* ──────── PATTERN GENERATOR ──────── */
     .thaat-select-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
@@ -228,10 +251,18 @@
     .gen-results { display:flex; flex-direction:column; gap:7px; margin-top:12px; max-height:400px; overflow-y:auto; }
     .gen-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); transition:all 0.18s; }
     .gen-row:hover { border-color:rgba(192,132,252,0.3); background:var(--surface3); }
+    .gen-row.gen-row-active { border-color:var(--accent3) !important; background:rgba(52,211,153,0.07) !important; }
     .gen-row-num { font-size:11px; color:var(--text3); font-weight:700; width:20px; flex-shrink:0; }
     .gen-row-notes { display:flex; gap:4px; flex-wrap:wrap; flex:1; }
-    .gen-note-badge { padding:3px 8px; border-radius:5px; font-size:12px; font-weight:700; }
+    .gen-note-badge { padding:3px 8px; border-radius:5px; font-size:12px; font-weight:700; transition:all 0.12s; }
+    .gen-note-badge.playing-badge { box-shadow:0 0 10px currentColor; transform:scale(1.18); }
     .gen-row-actions { display:flex; gap:5px; flex-shrink:0; }
+    /* GEN PLAYBACK STRIP */
+    .gen-playback-strip { min-height:44px; background:var(--surface2); border:1px solid rgba(52,211,153,0.3); border-radius:var(--radius-sm); padding:8px 12px; display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-bottom:10px; }
+    .gen-playback-strip.hidden { display:none; }
+    .gps-note { padding:4px 9px; border-radius:6px; font-size:13px; font-weight:700; opacity:0.38; transition:all 0.1s; }
+    .gps-note.active { opacity:1; box-shadow:0 0 14px currentColor; transform:scale(1.12); }
+    .gps-note.played { opacity:0.55; }
     .gen-btn { padding:5px 11px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; border:none; transition:all 0.15s; }
     .gen-btn-load { background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.3); color:var(--accent); }
     .gen-btn-load:hover { background:rgba(192,132,252,0.25); }
@@ -252,7 +283,7 @@
     .progress-bar { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 0.12s linear; width:0%; }
     .playback-stats { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
     .stat-pill { font-size:11px; font-weight:600; padding:4px 11px; border-radius:20px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); white-space:nowrap; }
-    .beat-dots { display:flex; gap:5px; align-items:center; }
+    .beat-dots { display:flex; gap:5px; align-items:center; flex-wrap:wrap; max-width:50px; }
     .beat-dot { width:7px; height:7px; border-radius:50%; background:var(--surface3); transition:all 0.1s; }
     .beat-dot.on { background:var(--accent); box-shadow:0 0 7px var(--glow); transform:scale(1.3); }
 
@@ -321,9 +352,19 @@
           <button class="tempo-adj" onclick="adjustTempo(5)">+</button>
         </div>
       </div>
-      <input type="range" id="tempoSlider" min="30" max="300" value="80" oninput="setTempo(this.value)" />
+      <input type="range" id="tempoSlider" min="30" max="400" value="80" oninput="setTempo(this.value)" />
       <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--text3)">
-        <span>Vilambit 30</span><span>Drut 300</span>
+        <span>Vilambit 30</span><span>Drut 400</span>
+      </div>
+      <div class="speed-btns">
+        <button class="speed-btn" onclick="halfSpeed()" title="Halve current BPM (shortcut: [)">½× Slow</button>
+        <button class="speed-btn" onclick="doubleSpeed()" title="Double current BPM (shortcut: ])">2× Fast</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:10px;margin-bottom:4px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Beat Type</div>
+      <div class="beat-type-row">
+        <button class="beat-type-btn" data-beats="3" onclick="setBeatType(3)">3-Beat</button>
+        <button class="beat-type-btn active" data-beats="4" onclick="setBeatType(4)">4-Beat</button>
+        <button class="beat-type-btn" data-beats="5" onclick="setBeatType(5)">5-Beat</button>
       </div>
     </div>
 
@@ -369,11 +410,12 @@
     <div class="card">
       <div class="card-title">Instrument Sound</div>
       <div class="wave-selector">
-        <button class="wave-btn active" data-wave="sitar" onclick="setWave('sitar')">🎸 Sitar</button>
-        <button class="wave-btn" data-wave="flute" onclick="setWave('flute')">🎵 Bansuri</button>
-        <button class="wave-btn" data-wave="sarangi" onclick="setWave('sarangi')">🎻 Sarangi</button>
-        <button class="wave-btn" data-wave="harmonium" onclick="setWave('harmonium')">🎹 Harmonium</button>
+        <button class="wave-btn active" data-wave="sitar" onclick="setWave('sitar')">🎸 Sitar<span class="wave-sub">Synth</span></button>
+        <button class="wave-btn" data-wave="flute" onclick="setWave('flute')">🪈 Bansuri<span class="wave-sub">Real Samples</span></button>
+        <button class="wave-btn" data-wave="sarangi" onclick="setWave('sarangi')">🎻 Violin<span class="wave-sub">Real Samples</span></button>
+        <button class="wave-btn" data-wave="harmonium" onclick="setWave('harmonium')">🎹 Harmonium<span class="wave-sub">Real Samples</span></button>
       </div>
+      <div class="sample-status" id="sampleStatus">⏳ Real samples will load on first use</div>
     </div>
 
     <div class="card">
@@ -474,6 +516,10 @@
         </div>
       </div>
 
+      <!-- Gen Playback Strip -->
+      <div id="genPlaybackLabel" style="font-size:10px;color:var(--accent3);font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;display:none">▶ Now Playing Shift</div>
+      <div class="gen-playback-strip hidden" id="genPlaybackStrip"></div>
+
       <!-- Generated Results -->
       <div class="gen-results" id="genResults">
         <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">
@@ -485,6 +531,7 @@
     <!-- PRESETS -->
     <div class="card">
       <div class="card-title">Preset Alankars</div>
+      <div class="presets-filter" id="presetsFilter"></div>
       <div class="presets-grid" id="presetsGrid"></div>
     </div>
 
@@ -544,32 +591,73 @@ const SWARAS = [
   { id:"S'", label:"S'", full:'Taar Sa',    semit:12, type:'pa-sa'  },
 ];
 
-// 10 Thaats of Hindustani music
+// 10 Thaats of Hindustani music — 7 notes each (S' omitted; octave handled automatically)
 const THAATS = {
-  Bilawal: ['S','R','G','m','P','D','N',"S'"],
-  Khamaj:  ['S','R','G','m','P','D','n',"S'"],
-  Kafi:    ['S','R','g','m','P','D','n',"S'"],
-  Asavari: ['S','R','g','m','P','d','n',"S'"],
-  Bhairavi:['S','r','g','m','P','d','n',"S'"],
-  Bhairav: ['S','r','G','m','P','d','N',"S'"],
-  Kalyan:  ['S','R','G','M','P','D','N',"S'"],
-  Marwa:   ['S','r','G','M','P','D','N',"S'"],
-  Poorvi:  ['S','r','G','M','P','d','N',"S'"],
-  Todi:    ['S','r','g','M','P','d','N',"S'"],
+  Bilawal: ['S','R','G','m','P','D','N'],
+  Khamaj:  ['S','R','G','m','P','D','n'],
+  Kafi:    ['S','R','g','m','P','D','n'],
+  Asavari: ['S','R','g','m','P','d','n'],
+  Bhairavi:['S','r','g','m','P','d','n'],
+  Bhairav: ['S','r','G','m','P','d','N'],
+  Kalyan:  ['S','R','G','M','P','D','N'],
+  Marwa:   ['S','r','G','M','P','D','N'],
+  Poorvi:  ['S','r','G','M','P','d','N'],
+  Todi:    ['S','r','g','M','P','d','N'],
 };
 
 const PRESETS = [
-  { name:'Alankaar 1 – Sa Re Ga Ma', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1}], tags:['Basic'] },
-  { name:'Full Saptak', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Full Scale'] },
-  { name:'Yaman Aroha', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Yaman','Raga'] },
-  { name:'Bhairav Aroha', notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Bhairav','Raga'] },
-  { name:'Bhairavi Aroha', notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}], tags:['Bhairavi','Raga'] },
-  { name:'3-Note Groups', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}], tags:['Ornament'] },
-  { name:'Gamak Pattern', notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1}], tags:['Gamak','Advanced'] },
-  { name:'Sa Pa Sa Drone', notes:[{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'P',o:0,dur:1},{id:'S',o:0,dur:1}], tags:['Drone'] },
-  { name:'Skip Pattern', notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1}], tags:['Advanced'] },
-  { name:'Mixed Durations', notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:2},{id:'m',o:0,dur:0.5},{id:'m',o:0,dur:0.5}], tags:['Rhythm','Mixed'] },
+  // ── BEGINNER ──────────────────────────────────────────
+  {name:'Sa Re Ga Ma',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1}],tags:['Beginner','Basic'],level:'beginner'},
+  {name:'Full Bilawal Saptak',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Scale'],level:'beginner'},
+  {name:'Sa Pa Sa Drone',notes:[{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'P',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Beginner','Drone'],level:'beginner'},
+  {name:'Sargam Basic (S R G m P)',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Beginner'],level:'beginner'},
+  {name:'Pa Dha Ni Sa',notes:[{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Upper'],level:'beginner'},
+  {name:'Bhairavi Scale',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Bhairavi'],level:'beginner'},
+  {name:'Kalyan Scale',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Kalyan'],level:'beginner'},
+  {name:'Bhairav Scale',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Bhairav'],level:'beginner'},
+  {name:'Sa Ma Sa',notes:[{id:'S',o:0,dur:1},{id:'m',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'m',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Beginner'],level:'beginner'},
+  {name:'Mandra to Madhya',notes:[{id:'S',o:-1,dur:1},{id:'P',o:-1,dur:1},{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Octave'],level:'beginner'},
+  // ── INTERMEDIATE ────────────────────────────────────
+  {name:'Yaman Aroha',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Yaman'],level:'intermediate'},
+  {name:'3-Note Groups (SRG…)',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Groups'],level:'intermediate'},
+  {name:'Ascending 4-Note Groups',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Groups'],level:'intermediate'},
+  {name:'Skip Pattern (Jumps)',notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Jumps'],level:'intermediate'},
+  {name:'Mixed Durations',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:2},{id:'m',o:0,dur:0.5},{id:'m',o:0,dur:0.5}],tags:['Intermediate','Rhythm'],level:'intermediate'},
+  {name:'Kafi Aroha',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Kafi'],level:'intermediate'},
+  {name:'Asavari Aroha',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Asavari'],level:'intermediate'},
+  {name:'Marwa Aroha',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Marwa'],level:'intermediate'},
+  {name:'Pairs Forward',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Pairs'],level:'intermediate'},
+  {name:'Zig-Zag Sa to Pa',notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1}],tags:['Intermediate','Zigzag'],level:'intermediate'},
+  {name:'Taar Saptak Entry',notes:[{id:'P',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'R',o:1,dur:1},{id:'G',o:1,dur:1},{id:'m',o:1,dur:1}],tags:['Intermediate','Taar'],level:'intermediate'},
+  {name:'Half-Note Slow Walk',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:2},{id:'G',o:0,dur:2},{id:'m',o:0,dur:2},{id:'P',o:0,dur:2}],tags:['Intermediate','Slow'],level:'intermediate'},
+  {name:'Eighth-Note Run',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Intermediate','Fast Run'],level:'intermediate'},
+  {name:'Alankaar Pattern 2',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Intermediate'],level:'intermediate'},
+  {name:'Alankaar Pattern 3',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate'],level:'intermediate'},
+  // ── ADVANCED ────────────────────────────────────────────
+  {name:'Gamak S R S G',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1}],tags:['Advanced','Gamak'],level:'advanced'},
+  {name:'Meend-style Glide',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:2},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:2}],tags:['Advanced','Meend'],level:'advanced'},
+  {name:'Taan Pattern 1',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5}],tags:['Advanced','Taan'],level:'advanced'},
+  {name:'Taan Pattern 2',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5}],tags:['Advanced','Taan'],level:'advanced'},
+  {name:'Khatka S r S R',notes:[{id:'S',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1}],tags:['Advanced','Khatka'],level:'advanced'},
+  {name:'Andolan (Komal Ga)',notes:[{id:'G',o:0,dur:2},{id:'g',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:2}],tags:['Advanced','Andolan'],level:'advanced'},
+  {name:'3-Group Descending',notes:[{id:"S'",o:0,dur:1},{id:'N',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:'D',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'P',o:0,dur:1},{id:'m',o:0,dur:1}],tags:['Advanced','Descending'],level:'advanced'},
+  {name:'Yaman Mukhra',notes:[{id:'N',o:-1,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Advanced','Yaman'],level:'advanced'},
+  {name:'Bhairav Vilambit',notes:[{id:'S',o:0,dur:2},{id:'r',o:0,dur:1},{id:'G',o:0,dur:2},{id:'m',o:0,dur:1},{id:'P',o:0,dur:2},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Bhairav','Slow'],level:'advanced'},
+  {name:'Crossover Pattern',notes:[{id:'S',o:0,dur:1},{id:'m',o:0,dur:1},{id:'R',o:0,dur:1},{id:'P',o:0,dur:1},{id:'G',o:0,dur:1},{id:'D',o:0,dur:1},{id:'m',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Crossover'],level:'advanced'},
+  {name:'Todi Aroha',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'g',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Todi'],level:'advanced'},
+  {name:'Double Octave Walk',notes:[{id:'S',o:-1,dur:1},{id:'R',o:-1,dur:1},{id:'G',o:-1,dur:1},{id:'m',o:-1,dur:1},{id:'P',o:-1,dur:1},{id:'D',o:-1,dur:1},{id:'N',o:-1,dur:1},{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Full Range'],level:'advanced'},
+  {name:'Mandra to Taar Run',notes:[{id:'N',o:-1,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Speed'],level:'advanced'},
+  {name:'Kafi Vilambit',notes:[{id:'S',o:0,dur:2},{id:'g',o:0,dur:1},{id:'m',o:0,dur:2},{id:'P',o:0,dur:1},{id:'D',o:0,dur:2},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Kafi','Slow'],level:'advanced'},
+  {name:'Bhairavi Avroha',notes:[{id:"S'",o:0,dur:1},{id:'n',o:0,dur:1},{id:'d',o:0,dur:1},{id:'P',o:0,dur:1},{id:'m',o:0,dur:1},{id:'g',o:0,dur:1},{id:'r',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Advanced','Bhairavi'],level:'advanced'},
+  {name:'Poorvi Aroha',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Poorvi'],level:'advanced'},
+  {name:'5-Note Leap',notes:[{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:'R',o:0,dur:1},{id:'D',o:0,dur:1},{id:'G',o:0,dur:1},{id:'N',o:0,dur:1},{id:'m',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Leaps'],level:'advanced'},
+  {name:'Mixed Speed Taan',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Mixed Speed'],level:'advanced'},
+  {name:'Khatka on Pa',notes:[{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Khatka'],level:'advanced'},
+  {name:'Sapat Taan',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Speed Taan'],level:'advanced'},
+  {name:'Shruti Practice',notes:[{id:'r',o:0,dur:1},{id:'R',o:0,dur:1},{id:'g',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'M',o:0,dur:1},{id:'d',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:1},{id:'N',o:0,dur:1}],tags:['Advanced','Shruti'],level:'advanced'},
+  {name:'Raga Desh Alankar',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Desh'],level:'advanced'},
 ];
+
 
 // ═══════════════════════════════════════════════════════
 //  STATE
@@ -592,6 +680,9 @@ let state = {
   genInput: [],
   generatedShifts: [],
   genReps: 2,
+  beatType: 4,
+  isGenPlay: false,
+  _shiftMap: null,
 };
 
 let audioCtx = null;
@@ -602,11 +693,83 @@ let playTimerId = null;
 let beatPhase = 0;
 
 // ═══════════════════════════════════════════════════════
+//  REAL AUDIO SAMPLES
+// ═══════════════════════════════════════════════════════
+const SAMPLE_BASE = 'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/';
+const SAMPLE_NOTES = {
+  harmonium: ['A2','As2','B2','C2','Cs2','D2','Ds2','E2','F2','Fs2','G2','Gs2','A3','As3','B3','C3','Cs3','D3','Ds3','E3','F3','Fs3','G3','Gs3','A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','C5','Cs5','D5'],
+  flute:     ['A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','A5','As5','B5','C5','Cs5','D5','Ds5','E5','F5','Fs5','G5','Gs5','A6','C6','E6'],
+  violin:    ['A3','A4','A5','A6','C4','C5','C6','Cs5','D4','D5','Ds5','E4','E5','F4','Fs4','G4','Gs4','G5'],
+};
+const audioBuffers = {};
+let samplesLoaded = false;
+let samplesLoading = false;
+
+function noteNameToMidi(n) {
+  const P={C:0,Cs:1,D:2,Ds:3,E:4,F:5,Fs:6,G:7,Gs:8,A:9,As:10,B:11};
+  const m=n.match(/^([A-G]s?)(\d)$/);
+  return m ? (parseInt(m[2])+1)*12+P[m[1]] : 60;
+}
+
+async function loadSamples() {
+  if (samplesLoading || samplesLoaded) return;
+  samplesLoading = true;
+  const insts = ['harmonium','flute','violin'];
+  let done=0, total=insts.reduce((a,i)=>a+SAMPLE_NOTES[i].length,0);
+  const el = ()=>document.getElementById('sampleStatus');
+  if (el()) el().textContent = 'Loading real samples 0%…';
+
+  await Promise.all(insts.flatMap(inst => SAMPLE_NOTES[inst].map(async note => {
+    try {
+      const res = await fetch(`${SAMPLE_BASE}${inst}/${note}.mp3`);
+      if (!res.ok) return;
+      const buf = await audioCtx.decodeAudioData(await res.arrayBuffer());
+      audioBuffers[`${inst}/${note}`] = { buffer: buf, midi: noteNameToMidi(note) };
+      done++;
+      const pct = Math.round(done/total*100);
+      if (el()) el().textContent = `Loading real samples ${pct}%…`;
+    } catch(e) {}
+  })));
+
+  samplesLoaded = true; samplesLoading = false;
+  if (el()) { el().textContent = '✓ Real samples loaded!'; el().classList.add('loaded'); }
+}
+
+function findNearest(inst, midi) {
+  const keys = Object.keys(audioBuffers).filter(k=>k.startsWith(inst+'/'));
+  if (!keys.length) return null;
+  return keys.reduce((best,k) => {
+    const d=Math.abs(audioBuffers[k].midi-midi);
+    return d<best.d ? {d,buf:audioBuffers[k]} : best;
+  }, {d:Infinity,buf:null}).buf;
+}
+
+function playSample(inst, freq, dur, t) {
+  const midi = Math.round(69+12*Math.log2(freq/440));
+  const s = findNearest(inst, midi);
+  if (!s) return;
+  const src = audioCtx.createBufferSource();
+  src.buffer = s.buffer;
+  src.playbackRate.value = Math.pow(2,(midi-s.midi)/12);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.001,t);
+  g.gain.linearRampToValueAtTime(0.55,t+0.03);
+  g.gain.setValueAtTime(0.5,t+dur*0.85);
+  g.gain.exponentialRampToValueAtTime(0.001,t+dur+0.08);
+  src.connect(g); g.connect(audioCtx.destination);
+  src.start(t); src.stop(t+dur+0.3);
+}
+
+// ═══════════════════════════════════════════════════════
 //  AUDIO ENGINE — Improved Synthesis
 // ═══════════════════════════════════════════════════════
 function ensureAudio() {
-  if (!audioCtx || audioCtx.state === 'closed') audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audioCtx || audioCtx.state === 'closed') {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
   if (audioCtx.state === 'suspended') audioCtx.resume();
+  // Begin sample loading on first audio context creation
+  if (!samplesLoaded && !samplesLoading) loadSamples();
 }
 
 function noteFreq(semit, octave) {
@@ -616,12 +779,18 @@ function noteFreq(semit, octave) {
 
 function playNote(freq, dur, t) {
   if (!audioCtx) return;
-  switch (state.wave) {
-    case 'sitar':    playSitar(freq, dur, t);    break;
-    case 'flute':    playFlute(freq, dur, t);    break;
-    case 'sarangi':  playSarangi(freq, dur, t);  break;
-    case 'harmonium':playHarmonium(freq, dur, t);break;
-    default:         playSitar(freq, dur, t);
+  const w = state.wave;
+  if (samplesLoaded) {
+    if (w==='harmonium') { playSample('harmonium',freq,dur,t); return; }
+    if (w==='flute')     { playSample('flute',freq,dur,t);     return; }
+    if (w==='sarangi')   { playSample('violin',freq,dur,t);   return; }
+  }
+  switch (w) {
+    case 'sitar':    playSitar(freq,dur,t);    break;
+    case 'flute':    playFlute(freq,dur,t);    break;
+    case 'sarangi':  playSarangi(freq,dur,t);  break;
+    case 'harmonium':playHarmonium(freq,dur,t);break;
+    default:         playSitar(freq,dur,t);
   }
 }
 
@@ -908,14 +1077,15 @@ function startPlay() {
   scheduleNext();
 }
 
-function startPlayCustom(queue) {
+function startPlayCustom(queue, isGen = false, shiftMap = null) {
   ensureAudio();
   if (state.tanpuraOn) startTanpura();
   state.playing = true;
+  state.isGenPlay = isGen;
+  state._shiftMap = shiftMap;
   playQueue = queue;
   playIdx = 0; beatPhase = 0;
-  updatePlayBtn();
-  scheduleNext();
+  updatePlayBtn(); scheduleNext();
 }
 
 function stopPlay() {
@@ -929,6 +1099,13 @@ function stopPlay() {
   document.querySelectorAll('.pattern-note').forEach(el => el.classList.remove('playing-note'));
   document.querySelectorAll('.swara-chip').forEach(el => el.classList.remove('active-note'));
   document.querySelectorAll('.flow-note').forEach(el => el.classList.remove('active','played'));
+  document.querySelectorAll('.gen-row').forEach(el => el.classList.remove('gen-row-active'));
+  document.querySelectorAll('.gen-note-badge').forEach(el => el.classList.remove('playing-badge'));
+  const strip = document.getElementById('genPlaybackStrip');
+  if (strip) strip.classList.add('hidden');
+  const lbl = document.getElementById('genPlaybackLabel');
+  if (lbl) lbl.style.display = 'none';
+  state.isGenPlay = false; state._shiftMap = null;
   updateBeatDots(-1);
   vizTarget = Array(VIZ_BARS).fill(2);
 }
@@ -961,18 +1138,23 @@ function scheduleNext() {
   const durMark = note.dur === 2 ? ' ·' : note.dur === 0.5 ? '·' : '';
   document.getElementById('nowNote').textContent = octMark + sw.label + durMark;
 
-  highlightPatternNote(playIdx % state.pattern.length);
-  highlightFlowNote(playIdx);
+  if (state.isGenPlay && state._shiftMap) {
+    const m = state._shiftMap[playIdx];
+    if (m) highlightGenStrip(m.shiftIdx, m.noteIdx, note);
+    // Also highlight swara chip
+    document.querySelectorAll('.swara-chip').forEach(el => el.classList.toggle('active-note', el.dataset.id === note.id));
+    document.getElementById('statPill').textContent = state._shiftMap[playIdx] ? `Shift ${state._shiftMap[playIdx].shiftIdx + 1}` : 'Playing…';
+  } else {
+    highlightPatternNote(playIdx % Math.max(state.pattern.length,1));
+    highlightFlowNote(playIdx);
+    document.getElementById('statPill').textContent = `Note ${(playIdx % Math.max(state.pattern.length,1)) + 1}/${state.pattern.length}`;
+  }
 
   const pct = ((playIdx + 1) / playQueue.length) * 100;
   document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('cyclePill').textContent = `Note ${playIdx + 1}/${playQueue.length}`;
 
-  const cycleNum = Math.min(Math.floor(playIdx / state.pattern.length) + 1, state.direction === 'both' ? state.repeats * 2 : state.repeats);
-  const totalCycles = state.direction === 'both' ? state.repeats * 2 : state.repeats;
-  document.getElementById('cyclePill').textContent = `Cycle ${cycleNum}/${totalCycles}`;
-  document.getElementById('statPill').textContent = `Note ${(playIdx % state.pattern.length) + 1}/${state.pattern.length}`;
-
-  beatPhase = (beatPhase + 1) % 4;
+  beatPhase = (beatPhase + 1) % state.beatType;
   updateBeatDots(beatPhase);
   vizTarget[Math.floor(Math.random() * VIZ_BARS)] = 18 + Math.random() * 26;
 
@@ -991,6 +1173,36 @@ function highlightFlowNote(idx) {
     el.classList.toggle('played', i < idx);
   });
 }
+function highlightGenStrip(shiftIdx, noteIdx, note) {
+  // Highlight active gen-row
+  document.querySelectorAll('.gen-row').forEach((el, i) => el.classList.toggle('gen-row-active', i === shiftIdx));
+  const rows = document.querySelectorAll('.gen-row');
+  if (rows[shiftIdx]) {
+    rows[shiftIdx].querySelectorAll('.gen-note-badge').forEach((b, i) => b.classList.toggle('playing-badge', i === noteIdx));
+  }
+  // Rebuild strip when shift changes
+  const strip = document.getElementById('genPlaybackStrip');
+  const lbl = document.getElementById('genPlaybackLabel');
+  if (noteIdx === 0 && state.generatedShifts[shiftIdx]) {
+    strip.innerHTML = '';
+    strip.classList.remove('hidden');
+    lbl.style.display = 'block';
+    lbl.textContent = `▶ Playing Shift ${shiftIdx + 1}`;
+    state.generatedShifts[shiftIdx].forEach((n, ni) => {
+      const s = getSw(n.id); if (!s) return;
+      const col = s.type==='komal'?'#f87171':s.type==='teevra'?'#fbbf24':s.type==='shuddh'?'#c084fc':'#34d399';
+      const el = document.createElement('span');
+      el.className = 'gps-note';
+      el.style.cssText = `color:${col};background:${col}22;border:1px solid ${col}55`;
+      el.textContent = (n.o===1?'⁺':n.o===-1?'₋':'') + s.label;
+      strip.appendChild(el);
+    });
+  }
+  strip.querySelectorAll('.gps-note').forEach((p, i) => {
+    p.classList.toggle('active', i === noteIdx);
+    p.classList.toggle('played', i < noteIdx);
+  });
+}
 function updatePlayBtn() {
   const btn = document.getElementById('playBtn');
   const btn2 = document.getElementById('buildPlayBtn');
@@ -1003,12 +1215,19 @@ function updatePlayBtn() {
 //  CONTROLS
 // ═══════════════════════════════════════════════════════
 function setTempo(v) {
-  state.tempo = parseInt(v);
+  state.tempo = Math.max(30, Math.min(400, parseInt(v)));
   document.getElementById('tempoDisplay').textContent = state.tempo;
   document.getElementById('tempoSlider').value = state.tempo;
   document.getElementById('tempoPill').textContent = state.tempo + ' BPM';
 }
-function adjustTempo(d) { setTempo(Math.max(30, Math.min(300, state.tempo + d))); }
+function adjustTempo(d) { setTempo(Math.max(30, Math.min(400, state.tempo + d))); }
+function halfSpeed() { setTempo(Math.max(30, Math.round(state.tempo / 2))); showToast(`½×: ${state.tempo} BPM`); }
+function doubleSpeed() { setTempo(Math.min(400, Math.round(state.tempo * 2))); showToast(`2×: ${state.tempo} BPM`); }
+function setBeatType(n) {
+  state.beatType = n;
+  document.querySelectorAll('.beat-type-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.beats) === n));
+  initBeatDots();
+}
 function adjustRepeats(d) {
   state.repeats = Math.max(1, Math.min(20, state.repeats + d));
   document.getElementById('repeatVal').textContent = state.repeats;
@@ -1034,6 +1253,8 @@ function setBasePitch(idx) {
 function setWave(w) {
   state.wave = w;
   document.querySelectorAll('.wave-btn').forEach(b => b.classList.toggle('active', b.dataset.wave === w));
+  // Trigger sample loading on first real-instrument selection
+  if (!samplesLoaded && !samplesLoading && w !== 'sitar') { ensureAudio(); }
 }
 function setNextOct(off) {
   state.nextOctOffset = off;
@@ -1141,14 +1362,42 @@ function renderPitchGrid() {
 // ═══════════════════════════════════════════════════════
 //  PRESETS
 // ═══════════════════════════════════════════════════════
+let activeFilter = 'all';
+
+function renderPresetsFilter() {
+  const f = document.getElementById('presetsFilter');
+  if (!f) return;
+  f.innerHTML = '';
+  ['all','beginner','intermediate','advanced'].forEach(lv => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (lv === activeFilter ? ' active' : '');
+    btn.textContent = lv === 'all' ? 'All' : lv[0].toUpperCase() + lv.slice(1);
+    btn.onclick = () => {
+      activeFilter = lv;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.preset-card').forEach((card, i) => {
+        const lvl = PRESETS[i]?.level || 'beginner';
+        card.classList.toggle('hidden', activeFilter !== 'all' && lvl !== activeFilter);
+      });
+    };
+    f.appendChild(btn);
+  });
+}
+
 function renderPresets() {
   const grid = document.getElementById('presetsGrid');
   grid.innerHTML = '';
   PRESETS.forEach((p, idx) => {
     const card = document.createElement('div');
     card.className = 'preset-card';
-    const noteStr = p.notes.map(n => n.id).join('–');
-    card.innerHTML = `<div class="preset-name">${p.name}</div><div class="preset-notes">${noteStr}</div><div class="preset-tags">${p.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`;
+    const noteStr = p.notes.map(n => (n.o===1?'\u207a':n.o===-1?'\u208b':'') + n.id).join('\u2013');
+    const tagHtml = p.tags.map(t => {
+      const tc = t.toLowerCase();
+      const cls = tc==='beginner'?'tag beginner':tc==='intermediate'?'tag intermediate':tc==='advanced'?'tag advanced':'tag';
+      return `<span class="${cls}">${t}</span>`;
+    }).join('');
+    card.innerHTML = `<div class="preset-name">${p.name}</div><div class="preset-notes">${noteStr}</div><div class="preset-tags">${tagHtml}</div>`;
     card.onclick = () => {
       document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
@@ -1235,21 +1484,16 @@ function generateShifts() {
 
   const thaatName = document.getElementById('thaatSelect').value;
   const thaat = THAATS[thaatName];
-  const tLen = thaat.length; // 8 notes
+  const tLen = thaat.length; // 7 notes per thaat (S' removed — handled via octave wrap)
 
-  // Get start position in thaat from first input note
   const startPos = state.genInput[0].thaatIdx;
-
-  // Compute intervals (positions relative to first note)
   const intervals = state.genInput.map(item => item.thaatIdx - startPos);
 
   state.generatedShifts = [];
 
-  // Generate all 8 shifts (one per thaat degree)
+  // Generate all 7 shifts (one per thaat degree)
   for (let shift = 0; shift < tLen; shift++) {
     const notes = intervals.map(interval => {
-      const absPos = shift + interval + (startPos > 0 ? 0 : 0);
-      // Calculate actual thaat position
       const thaatPos = shift + interval;
       const noteIdx = ((thaatPos % tLen) + tLen) % tLen;
       const octaveOff = thaatPos >= 0 ? Math.floor(thaatPos / tLen) : -Math.ceil(-thaatPos / tLen);
@@ -1303,21 +1547,25 @@ function loadGenShift(idx) {
 function playGenShift(idx) {
   if (state.playing) stopPlay();
   const shift = state.generatedShifts[idx];
-  const seq = [];
-  for (let r = 0; r < state.genReps; r++) seq.push(...shift);
+  const seq = []; const shiftMap = [];
+  for (let r = 0; r < state.genReps; r++) {
+    shift.forEach((note, ni) => { seq.push(note); shiftMap.push({ shiftIdx: idx, noteIdx: ni }); });
+  }
   ensureAudio();
-  startPlayCustom(seq);
+  startPlayCustom(seq, true, shiftMap);
 }
 
 function playAllShifts() {
   if (!state.generatedShifts.length) { showToast('Generate shifts first!'); return; }
   if (state.playing) stopPlay();
-  const fullSeq = [];
-  state.generatedShifts.forEach(shift => {
-    for (let r = 0; r < state.genReps; r++) fullSeq.push(...shift);
+  const fullSeq = []; const shiftMap = [];
+  state.generatedShifts.forEach((shift, si) => {
+    for (let r = 0; r < state.genReps; r++) {
+      shift.forEach((note, ni) => { fullSeq.push(note); shiftMap.push({ shiftIdx: si, noteIdx: ni }); });
+    }
   });
   ensureAudio();
-  startPlayCustom(fullSeq);
+  startPlayCustom(fullSeq, true, shiftMap);
   showToast(`Playing all ${state.generatedShifts.length} shifts!`);
 }
 
@@ -1371,9 +1619,13 @@ function renderSaved() {
 function initBeatDots() {
   const c = document.getElementById('beatDots');
   c.innerHTML = '';
-  for (let i = 0; i < 4; i++) { const d = document.createElement('div'); d.className = 'beat-dot'; d.id = `bd${i}`; c.appendChild(d); }
+  for (let i = 0; i < state.beatType; i++) {
+    const d = document.createElement('div'); d.className = 'beat-dot'; d.id = `bd${i}`; c.appendChild(d);
+  }
 }
-function updateBeatDots(active) { for (let i = 0; i < 4; i++) document.getElementById(`bd${i}`)?.classList.toggle('on', i === active); }
+function updateBeatDots(active) {
+  for (let i = 0; i < state.beatType; i++) document.getElementById(`bd${i}`)?.classList.toggle('on', i === active);
+}
 
 const VIZ_BARS = 16;
 let vizTarget = Array(VIZ_BARS).fill(2);
@@ -1418,6 +1670,8 @@ document.addEventListener('keydown', e => {
   if (e.code === 'ArrowUp') { e.preventDefault(); adjustTempo(5); }
   if (e.code === 'ArrowDown') { e.preventDefault(); adjustTempo(-5); }
   if (e.code === 'KeyL') toggleLoop();
+  if (e.code === 'BracketLeft') { e.preventDefault(); halfSpeed(); }
+  if (e.code === 'BracketRight') { e.preventDefault(); doubleSpeed(); }
 });
 
 // Modal
@@ -1433,6 +1687,7 @@ document.getElementById('saveModal').addEventListener('click', e => { if (e.targ
 function init() {
   renderPitchGrid();
   renderSwaraPalette();
+  renderPresetsFilter();
   renderPresets();
   renderPattern();
   renderFlowNotes();
@@ -1441,6 +1696,8 @@ function init() {
   initBeatDots();
   initViz();
   setTempo(80);
+  // Pre-load audio context and start sample loading
+  setTimeout(() => { ensureAudio(); }, 800);
 }
 
 document.addEventListener('DOMContentLoaded', init);
