@@ -352,9 +352,9 @@
           <button class="tempo-adj" onclick="adjustTempo(5)">+</button>
         </div>
       </div>
-      <input type="range" id="tempoSlider" min="30" max="400" value="80" oninput="setTempo(this.value)" />
+      <input type="range" id="tempoSlider" min="30" max="500" value="80" oninput="setTempo(this.value)" />
       <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--text3)">
-        <span>Vilambit 30</span><span>Drut 400</span>
+        <span>Vilambit 30</span><span>Drut 500</span>
       </div>
       <div class="speed-btns">
         <button class="speed-btn" onclick="halfSpeed()" title="Halve current BPM (shortcut: [)">½× Slow</button>
@@ -400,7 +400,7 @@
       </div>
       <div class="repeat-row">
         <button class="tempo-adj" onclick="adjustRepeats(-1)">−</button>
-        <div class="repeat-val" id="repeatVal">3</div>
+        <div class="repeat-val" id="repeatVal">1</div>
         <button class="tempo-adj" onclick="adjustRepeats(1)">+</button>
         <span style="font-size:11px;color:var(--text3)">cycles</span>
         <button class="loop-pill" id="loopPill" onclick="toggleLoop()">∞ Loop OFF</button>
@@ -410,7 +410,7 @@
     <div class="card">
       <div class="card-title">Instrument Sound</div>
       <div class="wave-selector">
-        <button class="wave-btn active" data-wave="sitar" onclick="setWave('sitar')">🎸 Sitar<span class="wave-sub">Synth</span></button>
+        <button class="wave-btn active" data-wave="sitar" onclick="setWave('sitar')">🎸 Sitar<span class="wave-sub">Real Samples</span></button>
         <button class="wave-btn" data-wave="flute" onclick="setWave('flute')">🪈 Bansuri<span class="wave-sub">Real Samples</span></button>
         <button class="wave-btn" data-wave="sarangi" onclick="setWave('sarangi')">🎻 Violin<span class="wave-sub">Real Samples</span></button>
         <button class="wave-btn" data-wave="harmonium" onclick="setWave('harmonium')">🎹 Harmonium<span class="wave-sub">Real Samples</span></button>
@@ -507,13 +507,20 @@
       <!-- Controls Row -->
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
         <button class="btn btn-gold" onclick="generateShifts()" style="flex-shrink:0">⚡ Generate All Shifts</button>
-        <button class="btn btn-success" onclick="playAllShifts()" style="flex-shrink:0" id="genPlayAllBtn">▶ Play All Shifts</button>
+        <button class="btn btn-success" onclick="playAllShifts()" style="flex-shrink:0" id="genPlayAllBtn">▶ Play All</button>
         <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
           <span style="font-size:11px;color:var(--text3)">Reps/shift:</span>
           <button class="tempo-adj" style="width:26px;height:26px;font-size:14px" onclick="adjustGenReps(-1)">−</button>
-          <span id="genRepsVal" style="font-size:14px;font-weight:700;width:22px;text-align:center">2</span>
+          <span id="genRepsVal" style="font-size:14px;font-weight:700;width:22px;text-align:center">1</span>
           <button class="tempo-adj" style="width:26px;height:26px;font-size:14px" onclick="adjustGenReps(1)">+</button>
         </div>
+      </div>
+      <!-- Generator Direction -->
+      <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">
+        <span style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;white-space:nowrap">Direction:</span>
+        <button class="beat-type-btn active" data-gdir="aaroh" onclick="setGenDirection('aaroh')">↑ Aaroh</button>
+        <button class="beat-type-btn" data-gdir="avroh" onclick="setGenDirection('avroh')">↓ Avroh</button>
+        <button class="beat-type-btn" data-gdir="both" onclick="setGenDirection('both')">⇅ Both</button>
       </div>
 
       <!-- Gen Playback Strip -->
@@ -656,7 +663,60 @@ const PRESETS = [
   {name:'Sapat Taan',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Speed Taan'],level:'advanced'},
   {name:'Shruti Practice',notes:[{id:'r',o:0,dur:1},{id:'R',o:0,dur:1},{id:'g',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'M',o:0,dur:1},{id:'d',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:1},{id:'N',o:0,dur:1}],tags:['Advanced','Shruti'],level:'advanced'},
   {name:'Raga Desh Alankar',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Desh'],level:'advanced'},
+
+  // ── CIRCULAR ALANKARS ────────────────────────────────
+  {name:'Full Circle (up → down)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Circular'],level:'advanced'},
+  {name:'Circular 2-Note Orbit',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Circular'],level:'advanced'},
+  {name:'Circular Spiral (S to S\u2019 to S)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Circular','Spiral'],level:'advanced'},
+  {name:'Orbit: 3-note up, 2-note back',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Circular'],level:'advanced'},
+  {name:'Loop: Sa–Re–Sa–Ga–Re–Ga',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5}],tags:['Advanced','Circular','Loop'],level:'advanced'},
+  {name:'Circular Taan (Sa–Ga–Re loop)',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5}],tags:['Advanced','Circular','Taan'],level:'advanced'},
+  {name:'Reverse Spiral (S\u2019 back to Sa)',notes:[{id:"S'",o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Circular','Descending'],level:'advanced'},
+  {name:'Two-Octave Circular',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'S',o:1,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Circular','2-Octave'],level:'advanced'},
+  {name:'Infinite Loop Gamak',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5}],tags:['Advanced','Circular','Gamak'],level:'advanced'},
+  {name:'Wave Pattern (up⋅down⋅up)',notes:[{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'R',o:1,dur:0.5}],tags:['Advanced','Circular','Wave'],level:'advanced'},
+
+  // ── PYRAMID ALANKARS ────────────────────────────────
+  {name:'Classic Pyramid (building up)',notes:[{id:'S',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Pyramid'],level:'advanced'},
+  {name:'Inverted Pyramid (shrinking)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Pyramid','Inverted'],level:'advanced'},
+  {name:'Diamond (up then down)',notes:[{id:'S',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Diamond'],level:'advanced'},
+  {name:'Staircase Pyramid',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Staircase'],level:'advanced'},
+  {name:'Expanding Triplets',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Pyramid','Expanding'],level:'advanced'},
+  {name:'Full Pyramid (S to S\u2019 and back)',notes:[{id:'S',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Full'],level:'advanced'},
+  {name:'Pentagon Pattern (5-note steps)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5}],tags:['Advanced','Pyramid','Pentagon'],level:'advanced'},
+  {name:'Ascending Wedge',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Advanced','Pyramid','Wedge'],level:'advanced'},
+  {name:'Descending Wedge',notes:[{id:'P',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Wedge','Descending'],level:'advanced'},
+  {name:'Double Pyramid',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Pyramid','Double'],level:'advanced'},
+
+  // ── EXPERT HARD ALANKARS ──────────────────────────
+  {name:'Compound Zigzag Taan',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Zigzag'],level:'advanced'},
+  {name:'Sa-Ni-Dha-Pa Ornament',notes:[{id:'S',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:1}],tags:['Advanced','Expert','Ornament'],level:'advanced'},
+  {name:'Matra 3+4+3+4 Rhythm',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Expert','Rhythm'],level:'advanced'},
+  {name:'Kaleidoscope (4-note cells)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Circular'],level:'advanced'},
+  {name:'Tri-speed (half, quarter, eighth)',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:2},{id:'D',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Rhythm'],level:'advanced'},
+  {name:'Raga Bhimpalasi Vilambit',notes:[{id:'S',o:0,dur:2},{id:'g',o:0,dur:1},{id:'m',o:0,dur:2},{id:'P',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:2},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Bhimpalasi'],level:'advanced'},
+  {name:'Yaman Vistar',notes:[{id:'N',o:-1,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'M',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:1},{id:'R',o:1,dur:0.5},{id:'G',o:1,dur:0.5},{id:'M',o:1,dur:1}],tags:['Advanced','Expert','Yaman'],level:'advanced'},
+  {name:'Spiral Cross Pattern',notes:[{id:'S',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Expert','Spiral'],level:'advanced'},
+  {name:'Marwa Taan',notes:[{id:'S',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'M',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'M',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Expert','Marwa'],level:'advanced'},
+  {name:'Mandra Taar Bridge',notes:[{id:'N',o:-1,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'R',o:1,dur:0.5},{id:'G',o:1,dur:0.5},{id:'m',o:1,dur:0.5},{id:'P',o:1,dur:0.5}],tags:['Advanced','Expert','3-Octave'],level:'advanced'},
+  {name:'Vakra (crooked) Taan',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Vakra'],level:'advanced'},
+  {name:'Chandrakauns Vistar',notes:[{id:'S',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:1},{id:'m',o:0,dur:0.5},{id:'g',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Expert','Chandrakauns'],level:'advanced'},
+  {name:'5+7 Split Rhythm Taan',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:1}],tags:['Advanced','Expert','Rhythm'],level:'advanced'},
+  {name:'Interlocking 4ths',notes:[{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Intervals'],level:'advanced'},
+  {name:'Speed Burst (16th notes)',notes:[{id:'S',o:0,dur:0.25},{id:'R',o:0,dur:0.25},{id:'G',o:0,dur:0.25},{id:'m',o:0,dur:0.25},{id:'P',o:0,dur:0.25},{id:'D',o:0,dur:0.25},{id:'N',o:0,dur:0.25},{id:"S'",o:0,dur:0.25},{id:'N',o:0,dur:0.25},{id:'D',o:0,dur:0.25},{id:'P',o:0,dur:0.25},{id:'m',o:0,dur:0.25},{id:'G',o:0,dur:0.25},{id:'R',o:0,dur:0.25},{id:'S',o:0,dur:0.5}],tags:['Advanced','Expert','Speed'],level:'advanced'},
+  {name:'Purvikalyani',notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'M',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Expert','Purvikalyani'],level:'advanced'},
+  {name:'Bageshri Alankar',notes:[{id:'S',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:0.5},{id:"S'",o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'n',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Expert','Bageshri'],level:'advanced'},
+  {name:'Lalit Swar Vistar',notes:[{id:'S',o:0,dur:2},{id:'r',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'M',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Lalit'],level:'advanced'},
+  {name:'Chromatic Run (all 12)',notes:[{id:'S',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'g',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'M',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'d',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'n',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Chromatic'],level:'advanced'},
+  {name:'Tilak Kamod Taan',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Expert','Tilak Kamod'],level:'advanced'},
+  {name:'Hamsadhvani Aroha (alt)',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Hamsadhvani'],level:'advanced'},
+  {name:'Hamsadhvani Avroha',notes:[{id:"S'",o:0,dur:1},{id:'N',o:0,dur:1},{id:'P',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:2}],tags:['Advanced','Expert','Hamsadhvani'],level:'advanced'},
+  {name:'Miyan ki Malhar Mukhra',notes:[{id:'N',o:-1,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'g',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'n',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Expert','Malhar'],level:'advanced'},
+  {name:'Gat-Tora (sitar phrase)',notes:[{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Advanced','Expert','Gat'],level:'advanced'},
+  {name:'Rapid Alternation (8va)',notes:[{id:'S',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'R',o:1,dur:0.5},{id:'G',o:0,dur:0.5},{id:'G',o:1,dur:0.5},{id:'m',o:0,dur:0.5},{id:'m',o:1,dur:0.5},{id:'P',o:0,dur:0.5},{id:'P',o:1,dur:0.5}],tags:['Advanced','Expert','Octave Jump'],level:'advanced'},
+  {name:'Rag Shree (Komal Re, Shudh Ni)',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Shree'],level:'advanced'},
 ];
+
 
 
 // ═══════════════════════════════════════════════════════
@@ -667,7 +727,7 @@ let state = {
   startOctave: 4,
   tempo: 80,
   direction: 'up',
-  repeats: 3,
+  repeats: 1,
   wave: 'sitar',
   pattern: [],
   nextOctOffset: 0,
@@ -679,7 +739,8 @@ let state = {
   savedAlankars: JSON.parse(localStorage.getItem('raagStudioAlankars2') || '[]'),
   genInput: [],
   generatedShifts: [],
-  genReps: 2,
+  genReps: 1,
+  genDirection: 'aaroh',
   beatType: 4,
   isGenPlay: false,
   _shiftMap: null,
@@ -697,9 +758,10 @@ let beatPhase = 0;
 // ═══════════════════════════════════════════════════════
 const SAMPLE_BASE = 'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/';
 const SAMPLE_NOTES = {
-  harmonium: ['A2','As2','B2','C2','Cs2','D2','Ds2','E2','F2','Fs2','G2','Gs2','A3','As3','B3','C3','Cs3','D3','Ds3','E3','F3','Fs3','G3','Gs3','A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','C5','Cs5','D5'],
-  flute:     ['A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','A5','As5','B5','C5','Cs5','D5','Ds5','E5','F5','Fs5','G5','Gs5','A6','C6','E6'],
-  violin:    ['A3','A4','A5','A6','C4','C5','C6','Cs5','D4','D5','Ds5','E4','E5','F4','Fs4','G4','Gs4','G5'],
+  harmonium:    ['A2','As2','B2','C2','Cs2','D2','Ds2','E2','F2','Fs2','G2','Gs2','A3','As3','B3','C3','Cs3','D3','Ds3','E3','F3','Fs3','G3','Gs3','A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','C5','Cs5','D5'],
+  flute:        ['A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','A5','As5','B5','C5','Cs5','D5','Ds5','E5','F5','Fs5','G5','Gs5','A6','C6','E6'],
+  violin:       ['A3','A4','A5','A6','C4','C5','C6','Cs5','D4','D5','Ds5','E4','E5','F4','Fs4','G4','Gs4','G5'],
+  'guitar-nylon':['Fs2','Fs3','Fs4','Fs5','B1','B2','B3','B4','E2','E3','E4','E5'],
 };
 const audioBuffers = {};
 let samplesLoaded = false;
@@ -714,7 +776,7 @@ function noteNameToMidi(n) {
 async function loadSamples() {
   if (samplesLoading || samplesLoaded) return;
   samplesLoading = true;
-  const insts = ['harmonium','flute','violin'];
+  const insts = ['harmonium','flute','violin','guitar-nylon'];
   let done=0, total=insts.reduce((a,i)=>a+SAMPLE_NOTES[i].length,0);
   const el = ()=>document.getElementById('sampleStatus');
   if (el()) el().textContent = 'Loading real samples 0%…';
@@ -781,9 +843,10 @@ function playNote(freq, dur, t) {
   if (!audioCtx) return;
   const w = state.wave;
   if (samplesLoaded) {
-    if (w==='harmonium') { playSample('harmonium',freq,dur,t); return; }
-    if (w==='flute')     { playSample('flute',freq,dur,t);     return; }
-    if (w==='sarangi')   { playSample('violin',freq,dur,t);   return; }
+    if (w==='sitar')     { playSample('guitar-nylon',freq,dur,t); return; }
+    if (w==='harmonium') { playSample('harmonium',freq,dur,t);   return; }
+    if (w==='flute')     { playSample('flute',freq,dur,t);       return; }
+    if (w==='sarangi')   { playSample('violin',freq,dur,t);      return; }
   }
   switch (w) {
     case 'sitar':    playSitar(freq,dur,t);    break;
@@ -970,54 +1033,77 @@ function playHarmonium(freq, dur, t) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  TANPURA DRONE — Improved (Sa-Pa-Sa or Sa-Ma-Sa)
+//  TANPURA DRONE — Authentic Jawari-style synthesis
 // ═══════════════════════════════════════════════════════
 let tanpuraCycle = null;
+
+function playTanpuraString(freq, vol, delay, now) {
+  const sr = audioCtx.sampleRate;
+  // Rich harmonic series (16 partials) for tanpura
+  const H = 16;
+  const real = new Float32Array(H+1); const imag = new Float32Array(H+1);
+  real[0] = 0;
+  // Natural harmonic amplitudes with jawari-like odd-harmonic boost
+  const amps = [0,1.0,0.42,0.62,0.18,0.38,0.10,0.28,0.08,0.20,0.06,0.15,0.05,0.12,0.04,0.09,0.03];
+  for (let k=1; k<=H; k++) real[k] = amps[k] * Math.exp(-0.04*k);
+  const wave = audioCtx.createPeriodicWave(real, imag, {disableNormalization:false});
+
+  // Main tone
+  const osc = audioCtx.createOscillator();
+  osc.setPeriodicWave(wave); osc.frequency.value = freq;
+
+  // Jawari buzz: slightly detuned second oscillator (+1.8 cents) for that characteristic shimmer
+  const osc2 = audioCtx.createOscillator();
+  osc2.setPeriodicWave(wave); osc2.frequency.value = freq * 1.001;
+
+  // Sub-harmonic body (octave below, quiet)
+  const osc3 = audioCtx.createOscillator();
+  osc3.frequency.value = freq * 0.5; osc3.type = 'sine';
+
+  // Slow amplitude modulation (tanpura vibration of string)
+  const tremLfo = audioCtx.createOscillator();
+  const tremGain = audioCtx.createGain();
+  tremLfo.frequency.value = 0.3 + Math.random()*0.15;
+  tremGain.gain.value = vol * 0.04;
+  tremLfo.connect(tremGain);
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, now+delay);
+  g.gain.linearRampToValueAtTime(vol, now+delay+0.06);
+  g.gain.setValueAtTime(vol*0.9, now+delay+0.8);
+  g.gain.exponentialRampToValueAtTime(0.001, now+delay+2.6);
+
+  const g3 = audioCtx.createGain(); g3.gain.value = 0.12;
+
+  osc.connect(g); osc2.connect(g); osc3.connect(g3); g3.connect(g);
+  tremGain.connect(g);
+  g.connect(audioCtx.destination);
+
+  const t = now+delay;
+  [osc,osc2,osc3,tremLfo].forEach(o=>{ o.start(t); o.stop(t+3.0); });
+  tanpuraNodes.push({osc,g});
+}
 
 function startTanpura() {
   stopTanpura();
   ensureAudio();
   const tuning = document.getElementById('tanpuraTuning').value;
-  const semits = tuning === 'sa-pa' ? [0, 7, 12, 0] :
-                 tuning === 'sa-ma' ? [0, 5, 12, 0] :
-                                      [0, 11, 12, 0]; // sa-ni
+  const semits = tuning === 'sa-pa' ? [0,7,12,0] :
+                 tuning === 'sa-ma' ? [0,5,12,0] : [0,11,12,0];
 
-  const cycle = 2.0; // seconds per full pluck cycle
-  let phase = 0;
+  const cycle = 2.2;
+  const baseOct = state.startOctave - 1;
 
   function pluckCycle() {
     if (!state.tanpuraOn) return;
     const now = audioCtx.currentTime;
-    const pluckDur = 1.8;
-    const baseOct = state.startOctave - 1;
-
     semits.forEach((s, i) => {
-      const oct = s === 0 && i === 3 ? state.startOctave : baseOct;
-      const freq = noteFreq(state.basePitch + (s % 12), s === 12 ? state.startOctave : oct);
+      const oct = (s===0 && i===3) ? state.startOctave : baseOct;
+      const freq = noteFreq(state.basePitch + (s%12), s===12 ? state.startOctave : oct);
       const delay = i * (cycle / semits.length);
-
-      // Build harmonium-style tanpura string with decay
-      const H2 = 6;
-      const r2 = new Float32Array(H2 + 1); const im2 = new Float32Array(H2 + 1);
-      r2[0] = 0;
-      [0, 1.0, 0.45, 0.22, 0.12, 0.06, 0.03].forEach((v, k) => { if (k <= H2) r2[k] = v; });
-      const pw = audioCtx.createPeriodicWave(r2, im2, { disableNormalization: false });
-
-      const osc = audioCtx.createOscillator();
-      osc.setPeriodicWave(pw);
-      osc.frequency.value = freq;
-
-      const g = audioCtx.createGain();
-      const vol = state.tanpuraVol * 0.22 * (i === 0 || i === 3 ? 1 : 0.7);
-      g.gain.setValueAtTime(0, now + delay);
-      g.gain.linearRampToValueAtTime(vol, now + delay + 0.04);
-      g.gain.exponentialRampToValueAtTime(0.001, now + delay + pluckDur);
-
-      osc.connect(g); g.connect(audioCtx.destination);
-      osc.start(now + delay); osc.stop(now + delay + pluckDur + 0.1);
-      tanpuraNodes.push({ osc, g });
+      const vol = state.tanpuraVol * 0.25 * (i===0||i===3 ? 1 : 0.75);
+      playTanpuraString(freq, vol, delay, now);
     });
-
     tanpuraCycle = setTimeout(pluckCycle, cycle * 1000);
   }
   pluckCycle();
@@ -1215,18 +1301,22 @@ function updatePlayBtn() {
 //  CONTROLS
 // ═══════════════════════════════════════════════════════
 function setTempo(v) {
-  state.tempo = Math.max(30, Math.min(400, parseInt(v)));
+  state.tempo = Math.max(30, Math.min(500, parseInt(v)));
   document.getElementById('tempoDisplay').textContent = state.tempo;
   document.getElementById('tempoSlider').value = state.tempo;
   document.getElementById('tempoPill').textContent = state.tempo + ' BPM';
 }
-function adjustTempo(d) { setTempo(Math.max(30, Math.min(400, state.tempo + d))); }
+function adjustTempo(d) { setTempo(Math.max(30, Math.min(500, state.tempo + d))); }
 function halfSpeed() { setTempo(Math.max(30, Math.round(state.tempo / 2))); showToast(`½×: ${state.tempo} BPM`); }
-function doubleSpeed() { setTempo(Math.min(400, Math.round(state.tempo * 2))); showToast(`2×: ${state.tempo} BPM`); }
+function doubleSpeed() { setTempo(Math.min(500, Math.round(state.tempo * 2))); showToast(`2×: ${state.tempo} BPM`); }
 function setBeatType(n) {
   state.beatType = n;
-  document.querySelectorAll('.beat-type-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.beats) === n));
+  document.querySelectorAll('.beat-type-btn[data-beats]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.beats) === n));
   initBeatDots();
+}
+function setGenDirection(d) {
+  state.genDirection = d;
+  document.querySelectorAll('.beat-type-btn[data-gdir]').forEach(b => b.classList.toggle('active', b.dataset.gdir === d));
 }
 function adjustRepeats(d) {
   state.repeats = Math.max(1, Math.min(20, state.repeats + d));
@@ -1362,23 +1452,23 @@ function renderPitchGrid() {
 // ═══════════════════════════════════════════════════════
 //  PRESETS
 // ═══════════════════════════════════════════════════════
-let activeFilter = 'all';
+let activeFilter = 'beginner';
 
 function renderPresetsFilter() {
   const f = document.getElementById('presetsFilter');
   if (!f) return;
   f.innerHTML = '';
-  ['all','beginner','intermediate','advanced'].forEach(lv => {
+  ['beginner','intermediate','advanced'].forEach(lv => {
     const btn = document.createElement('button');
     btn.className = 'filter-btn' + (lv === activeFilter ? ' active' : '');
-    btn.textContent = lv === 'all' ? 'All' : lv[0].toUpperCase() + lv.slice(1);
+    btn.textContent = lv[0].toUpperCase() + lv.slice(1);
     btn.onclick = () => {
       activeFilter = lv;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       document.querySelectorAll('.preset-card').forEach((card, i) => {
         const lvl = PRESETS[i]?.level || 'beginner';
-        card.classList.toggle('hidden', activeFilter !== 'all' && lvl !== activeFilter);
+        card.classList.toggle('hidden', lvl !== activeFilter);
       });
     };
     f.appendChild(btn);
@@ -1406,6 +1496,8 @@ function renderPresets() {
       renderPattern(); renderFlowNotes();
       showToast(`Loaded: ${p.name}`);
     };
+    // Hide cards not matching default filter
+    if (p.level !== activeFilter) card.classList.add('hidden');
     grid.appendChild(card);
   });
 }
@@ -1544,13 +1636,27 @@ function loadGenShift(idx) {
   document.querySelector('.pattern-track')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+// Build a playback sequence for a single shift honouring aaroh/avroh/both direction
+function buildShiftSeq(shift, si, shiftMap) {
+  const seq = [];
+  const dir = state.genDirection;
+  for (let r = 0; r < state.genReps; r++) {
+    if (dir === 'aaroh' || dir === 'both') {
+      shift.forEach((note, ni) => { seq.push(note); shiftMap.push({ shiftIdx: si, noteIdx: ni }); });
+    }
+    if (dir === 'avroh' || dir === 'both') {
+      // Avroh: reversed shift, note indices go from high end down
+      const rev = [...shift].reverse();
+      rev.forEach((note, ni) => { seq.push(note); shiftMap.push({ shiftIdx: si, noteIdx: shift.length - 1 - ni }); });
+    }
+  }
+  return seq;
+}
+
 function playGenShift(idx) {
   if (state.playing) stopPlay();
   const shift = state.generatedShifts[idx];
-  const seq = []; const shiftMap = [];
-  for (let r = 0; r < state.genReps; r++) {
-    shift.forEach((note, ni) => { seq.push(note); shiftMap.push({ shiftIdx: idx, noteIdx: ni }); });
-  }
+  const shiftMap = []; const seq = buildShiftSeq(shift, idx, shiftMap);
   ensureAudio();
   startPlayCustom(seq, true, shiftMap);
 }
@@ -1558,15 +1664,11 @@ function playGenShift(idx) {
 function playAllShifts() {
   if (!state.generatedShifts.length) { showToast('Generate shifts first!'); return; }
   if (state.playing) stopPlay();
-  const fullSeq = []; const shiftMap = [];
-  state.generatedShifts.forEach((shift, si) => {
-    for (let r = 0; r < state.genReps; r++) {
-      shift.forEach((note, ni) => { fullSeq.push(note); shiftMap.push({ shiftIdx: si, noteIdx: ni }); });
-    }
-  });
+  const fSeq = []; const fMap = [];
+  state.generatedShifts.forEach((shift, si) => { buildShiftSeq(shift, si, fMap).forEach(n => fSeq.push(n)); });
   ensureAudio();
-  startPlayCustom(fullSeq, true, shiftMap);
-  showToast(`Playing all ${state.generatedShifts.length} shifts!`);
+  startPlayCustom(fSeq, true, fMap);
+  showToast(`Playing all ${state.generatedShifts.length} shifts (${state.genDirection})!`);
 }
 
 // ═══════════════════════════════════════════════════════
