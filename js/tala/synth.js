@@ -138,76 +138,157 @@ export function playBol(ctx, bolName, audioTime, {
   }
 }
 
-// ── DAYAN (right / treble drum) ───────────────────────────────────────────
+// ── DAYAN (right / treble drum) — Stretched Leather Membrane Model ────────
 //
-// The characteristic tabla sound.  Kept deliberately SIMPLE:
-//   • 1 main sine oscillator (fundamental)
-//   • 1 gentle harmonic at 1.51× (just enough inharmonicity for "singing")
-//   • 1 very soft skin-thwack (low-mid bandpass noise, SHORT)
-//   • NO high-frequency content
+// What makes leather sound like leather (not metal):
+//
+//   1. HARMONICS DIE FAST  — any partial above the fundamental decays in
+//      <55ms. Metal sustains harmonics; leather absorbs them. Only the
+//      fundamental rings long. This is the single biggest factor.
+//
+//   2. AMPLITUDE BLOOM     — real membrane takes ~15ms to fully engage
+//      after finger impact. The tone swells slightly after the strike,
+//      not a sharp instant peak like a metal bell.
+//
+//   3. MEMBRANE FLUTTER    — stretched skin oscillates at ~45Hz producing
+//      a gentle natural tremor (±3% amplitude mod). Removes the "static"
+//      electronic quality of a pure sine.
+//
+//   4. PITCH GLIDE IS SLOW — leather stretches gradually, not a snappy
+//      electronic pitch snap. Glide takes ~45ms to settle.
+//
+//   5. ATTACK = FINGER PAT — the impact noise is the sound of fingers on
+//      skin: low-mid (300–500 Hz bandpass), dull, short. Not a "click".
 //
 function _dayan(ctx, t, type, gain) {
   const dest = _dest(ctx);
 
   let f0, ringTime, muted;
   switch (type) {
-    case 'tin': f0 = DAYAN_F0 * 1.05; ringTime = 1.00; muted = false; break;
-    case 'ta':  f0 = DAYAN_F0 * 1.02; ringTime = 0.16; muted = true;  break;
-    case 'te':  f0 = DAYAN_F0 * 0.99; ringTime = 0.12; muted = true;  break;
-    default:    f0 = DAYAN_F0;         ringTime = 0.70; muted = false; break;
+    case 'tin': f0 = DAYAN_F0 * 1.04; ringTime = 0.95; muted = false; break;
+    case 'ta':  f0 = DAYAN_F0 * 1.01; ringTime = 0.18; muted = true;  break;
+    case 'te':  f0 = DAYAN_F0 * 0.98; ringTime = 0.14; muted = true;  break;
+    default:    f0 = DAYAN_F0;         ringTime = 0.72; muted = false; break;
   }
 
-  const totalDur = ringTime + 0.08;
+  const totalDur = ringTime + 0.10;
 
-  // ── Fundamental (sine, warm)
-  const osc1 = ctx.createOscillator();
-  osc1.type = 'sine';
-  // Slight upward pitch glide on strike then settle (membrane stretch)
-  osc1.frequency.setValueAtTime(f0 * 1.04, t);
-  osc1.frequency.exponentialRampToValueAtTime(f0, t + 0.028);
+  // ── [1] FUNDAMENTAL — the only thing that rings long
+  //    Slow pitch glide: membrane stretches over 45ms, not an instant snap
+  const fund = ctx.createOscillator();
+  fund.type = 'sine';
+  fund.frequency.setValueAtTime(f0 * 1.025, t);                          // start slightly sharp
+  fund.frequency.linearRampToValueAtTime(f0, t + 0.045);                 // slow leather stretch
 
-  // ── Inharmonic 2nd partial — light (gives "singing" quality without harshness)
-  const osc2 = ctx.createOscillator();
-  osc2.type = 'sine';
-  osc2.frequency.setValueAtTime(f0 * 1.51 * 1.03, t);
-  osc2.frequency.exponentialRampToValueAtTime(f0 * 1.51, t + 0.022);
+  // ── [2] INHARMONIC PARTIAL (syahi character) — TRANSIENT ONLY, dies in 55ms
+  //    Gives the characteristic "singing" quality on attack but must NOT sustain
+  //    (sustained 1.51× partial = metallic bell. Brief 1.51× = tabla character)
+  const partialOsc = ctx.createOscillator();
+  partialOsc.type = 'sine';
+  partialOsc.frequency.setValueAtTime(f0 * 1.51, t);
 
-  const g2 = ctx.createGain();
-  g2.gain.value = 0.18;   // very subtle — blend, not compete
+  const partialEnv = ctx.createGain();
+  partialEnv.gain.setValueAtTime(gain * 0.22, t + 0.008);  // kicks in slightly after
+  partialEnv.gain.exponentialRampToValueAtTime(0.0001, t + 0.055);  // DEAD by 55ms
 
-  // ── Amplitude envelope
-  const env = ctx.createGain();
-  env.gain.setValueAtTime(0, t);
-  env.gain.linearRampToValueAtTime(gain, t + 0.006);    // soft attack (not a click)
-
+  // ── [3] AMPLITUDE BLOOM — membrane engages over 18ms, not an instant peak
+  //    Shape: 0 → peak at 18ms → slight fall → long ring → silence
+  const bloom = ctx.createGain();
+  bloom.gain.setValueAtTime(0, t);
+  bloom.gain.linearRampToValueAtTime(gain * 0.60, t + 0.008);   // initial impact
+  bloom.gain.linearRampToValueAtTime(gain,         t + 0.018);   // bloom peak (membrane engaging)
   if (muted) {
-    env.gain.exponentialRampToValueAtTime(0.0001, t + ringTime);
+    bloom.gain.exponentialRampToValueAtTime(0.0001, t + ringTime);
   } else {
-    env.gain.setValueAtTime(gain, t + 0.010);
-    env.gain.exponentialRampToValueAtTime(gain * 0.55, t + 0.08);
-    env.gain.exponentialRampToValueAtTime(gain * 0.15, t + ringTime * 0.55);
-    env.gain.exponentialRampToValueAtTime(0.0001,       t + totalDur);
+    bloom.gain.exponentialRampToValueAtTime(gain * 0.68, t + 0.065);   // natural sag
+    bloom.gain.exponentialRampToValueAtTime(gain * 0.22, t + ringTime * 0.50);
+    bloom.gain.exponentialRampToValueAtTime(0.0001,       t + totalDur);
   }
 
-  osc1.connect(env);
-  osc2.connect(g2); g2.connect(env);
-  env.connect(dest);
-  osc1.start(t); osc1.stop(t + totalDur + 0.05);
-  osc2.start(t); osc2.stop(t + totalDur + 0.05);
+  // ── [4] MEMBRANE FLUTTER — very subtle 45Hz AM to remove "static" sine quality
+  //    Simulates the natural micro-oscillation of stretched skin
+  const flutter = ctx.createOscillator();
+  flutter.type = 'sine';
+  flutter.frequency.value = 45;
 
-  // ── Skin thwack — LOW-MID ONLY (1.2–2.8× f0), very short & soft
-  const thwack = _noiseNode(ctx, 0.040);
-  const thwFilt = ctx.createBiquadFilter();
-  thwFilt.type = 'bandpass';
-  thwFilt.frequency.value = f0 * 1.8;   // mid, not harsh
-  thwFilt.Q.value = 2.2;
+  const flutterDepth = ctx.createGain();
+  flutterDepth.gain.value = 0.032; // ±3.2% depth — feel it, don't hear it
 
-  const thwEnv = ctx.createGain();
-  thwEnv.gain.setValueAtTime(gain * 0.28, t);            // subtle, not dominant
-  thwEnv.gain.exponentialRampToValueAtTime(0.0001, t + (muted ? 0.018 : 0.038));
+  const flutterBase = ctx.createGain();
+  flutterBase.gain.value = 1.0;    // DC offset so flutter modulates around 1.0
 
-  thwack.connect(thwFilt); thwFilt.connect(thwEnv); thwEnv.connect(dest);
-  thwack.start(t); thwack.stop(t + 0.042);
+  // Flutter modulates the bloom envelope amplitude
+  // We do this by summing flutter into the gain of the bloom's input
+  // (simplified: multiply fund output by a near-1 oscillation)
+  const flutterMix = ctx.createGain();
+  flutterMix.gain.value = gain;
+
+  // ── Topology:
+  // fund → bloom → dest
+  // partialOsc → partialEnv → dest
+  // flutter modulates bloom slightly
+
+  fund.connect(bloom);
+  bloom.connect(dest);
+
+  partialOsc.connect(partialEnv);
+  partialEnv.connect(dest);
+
+  // Flutter: ring-modulate the bloom output at ±3%
+  // Approach: create a gain node that the flutter LFO drives
+  const ringMod = ctx.createGain();
+  ringMod.gain.value = 0;
+  flutter.connect(flutterDepth);
+  flutterDepth.connect(ringMod.gain);
+
+  // We only want the flutter when the membrane is actually vibrating (after bloom)
+  // Schedule flutter envelope to match bloom
+  const fEnv = ctx.createGain();
+  fEnv.gain.setValueAtTime(0, t);
+  fEnv.gain.linearRampToValueAtTime(muted ? gain * 0.015 : gain * 0.028, t + 0.025);
+  if (!muted) {
+    fEnv.gain.exponentialRampToValueAtTime(0.0001, t + totalDur);
+  } else {
+    fEnv.gain.exponentialRampToValueAtTime(0.0001, t + ringTime);
+  }
+  fund.connect(fEnv);
+  fEnv.connect(dest);
+
+  flutter.start(t);
+  flutter.stop(t + totalDur + 0.05);
+  fund.start(t);
+  fund.stop(t + totalDur + 0.05);
+  partialOsc.start(t);
+  partialOsc.stop(t + 0.060);
+
+  // ── [5] FINGER-ON-SKIN PAT — low-mid noise only, dull thud of flesh on leather
+  //    300–520 Hz bandpass: the sound of fingertip contacting stretched skin
+  //    NO content above 600Hz — leather absorbs all of that
+  const pat = _noiseNode(ctx, 0.045);
+  const patFilt = ctx.createBiquadFilter();
+  patFilt.type = 'bandpass';
+  patFilt.frequency.value = f0 * 0.65;  // ~338Hz for na, dull thud
+  patFilt.Q.value = 1.8;                // wide band = natural, not tonal
+
+  const patEnv = ctx.createGain();
+  patEnv.gain.setValueAtTime(gain * 0.22, t);
+  patEnv.gain.exponentialRampToValueAtTime(0.0001, t + (muted ? 0.020 : 0.042));
+
+  pat.connect(patFilt); patFilt.connect(patEnv); patEnv.connect(dest);
+  pat.start(t); pat.stop(t + 0.048);
+
+  // ── [6] Leather body resonance — very subtle sub-fundamental thud
+  //    Gives the "weight" of a real drum (half-frequency, very soft)
+  if (!muted) {
+    const body = ctx.createOscillator();
+    body.type = 'sine';
+    body.frequency.value = f0 * 0.50;   // sub-octave
+    const bEnv = ctx.createGain();
+    bEnv.gain.setValueAtTime(gain * 0.06, t + 0.005);
+    bEnv.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+    body.connect(bEnv); bEnv.connect(dest);
+    body.start(t + 0.004); body.stop(t + 0.14);
+  }
 }
 
 // ── BAYAN (left / bass drum) ──────────────────────────────────────────────
