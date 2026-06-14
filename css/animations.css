@@ -1,0 +1,24 @@
+/* ═══════════════════════════════════════════════════
+   RAAG STUDIO — Animations
+═══════════════════════════════════════════════════ */
+
+@keyframes amb {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(30px) scale(1.05); }
+}
+
+@keyframes notePulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}

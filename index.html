@@ -2,1807 +2,469 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Raag Studio — Alankar Practice</title>
-  <meta name="description" content="Practice Indian classical music alankars with customizable patterns, pitch, tempo and thaat-based pattern generator." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a12" />
+  <meta name="description" content="Raag Studio — An Indian classical music alankar practice tool. Practice Hindustani swaras with authentic synthesis, pattern generation, and a tanpura drone." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Raag Studio" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="Raag Studio" />
+  <meta property="og:description" content="Practice Indian classical music alankars with authentic synthesis, pattern generation, and a tanpura drone." />
+  <meta property="og:type"        content="website" />
+
+  <title>Raag Studio — Hindustani Alankar Practice</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    :root {
-      --bg: #0a0a12;
-      --surface: #12121e;
-      --surface2: #1a1a2e;
-      --surface3: #22223a;
-      --border: rgba(255,255,255,0.08);
-      --accent: #c084fc;
-      --accent2: #818cf8;
-      --accent3: #34d399;
-      --gold: #fbbf24;
-      --danger: #f87171;
-      --text: #f1f0ff;
-      --text2: #a29fc8;
-      --text3: #6b6890;
-      --glow: rgba(192,132,252,0.3);
-      --radius: 16px;
-      --radius-sm: 10px;
-    }
-
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-
-    body::before {
-      content: ''; position: fixed; top: -200px; left: -200px;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(192,132,252,0.07) 0%, transparent 70%);
-      pointer-events: none; animation: amb 8s ease-in-out infinite;
-    }
-    body::after {
-      content: ''; position: fixed; bottom: -150px; right: -150px;
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(129,140,248,0.05) 0%, transparent 70%);
-      pointer-events: none; animation: amb 10s ease-in-out infinite reverse;
-    }
-    @keyframes amb { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(30px) scale(1.05)} }
-
-    /* HEADER */
-    header {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(10,10,18,0.88); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px;
-    }
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,var(--accent),var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .logo-text { font-size: 20px; font-weight: 700; }
-    .logo-text span { color: var(--accent); }
-    .header-badge { font-size: 11px; font-weight: 600; color: var(--accent3); background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2); padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; }
-
-    /* LAYOUT */
-    .app { max-width: 1440px; margin: 0 auto; padding: 24px 20px; display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
-    @media(max-width:900px){ .app{grid-template-columns:1fr} }
-
-    /* CARD */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; }
-    .card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(192,132,252,0.35),transparent); }
-    .card-title { font-size:12px; font-weight:700; color:var(--text3); letter-spacing:1.2px; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-    .card-title::before { content:''; width:3px; height:13px; background:linear-gradient(180deg,var(--accent),var(--accent2)); border-radius:2px; }
-
-    /* LEFT PANEL */
-    .left-panel { display:flex; flex-direction:column; gap:18px; }
-
-    /* PITCH GRID */
-    .pitch-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
-    .pitch-btn { padding:8px 4px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
-    .pitch-btn:hover { background:var(--surface3); color:var(--text); border-color:rgba(192,132,252,0.3); }
-    .pitch-btn.active { background:linear-gradient(135deg,rgba(192,132,252,0.2),rgba(129,140,248,0.2)); border-color:var(--accent); color:var(--accent); box-shadow:0 0 10px rgba(192,132,252,0.2); }
-
-    /* OCTAVE */
-    .octave-selector { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-    .oct-btn { padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
-    .oct-btn .oct-hi { font-size:10px; opacity:0.6; display:block; margin-top:2px; }
-    .oct-btn:hover { background:var(--surface3); color:var(--text); }
-    .oct-btn.active { background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05)); border-color:var(--gold); color:var(--gold); }
-
-    /* TEMPO */
-    .tempo-display { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .tempo-value { font-size:36px; font-weight:800; line-height:1; }
-    .tempo-label { font-size:12px; color:var(--text3); margin-top:2px; }
-    .tempo-btns { display:flex; gap:6px; }
-    .tempo-adj { width:32px; height:32px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; font-weight:600; }
-    .tempo-adj:hover { background:var(--surface3); border-color:rgba(192,132,252,0.4); }
-
-    input[type="range"] { -webkit-appearance:none; width:100%; height:6px; background:var(--surface3); border-radius:3px; outline:none; cursor:pointer; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:50%; box-shadow:0 0 8px var(--glow); cursor:pointer; transition:transform 0.15s; }
-    input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.2); }
-
-    /* SPEED BTNS */
-    .speed-btns { display:flex; gap:6px; margin-top:10px; }
-    .speed-btn { flex:1; padding:7px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:center; }
-    .speed-btn:hover { background:var(--surface3); color:var(--text); border-color:rgba(192,132,252,0.4); }
-
-    /* BEAT TYPE */
-    .beat-type-row { display:flex; gap:6px; margin-top:10px; }
-    .beat-type-btn { flex:1; padding:7px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:center; }
-    .beat-type-btn:hover { background:var(--surface3); color:var(--text); }
-    .beat-type-btn.active { background:rgba(192,132,252,0.15); border-color:var(--accent); color:var(--accent); }
-
-    /* NOTE OPTIONS BAR */
-    .note-opts-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .opts-label { font-size:10px; color:var(--text3); font-weight:600; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px; }
-    .seg-btns { display:flex; gap:4px; }
-    .seg-btn { flex:1; padding:7px 4px; background:var(--surface2); border:1px solid var(--border); border-radius:7px; color:var(--text3); font-size:11px; font-weight:700; cursor:pointer; transition:all 0.2s; text-align:center; }
-    .seg-btn:hover { background:var(--surface3); color:var(--text); }
-    .seg-btn.active-dur { background:rgba(251,191,36,0.15); border-color:var(--gold); color:var(--gold); }
-    .seg-btn.active-oct { background:rgba(192,132,252,0.15); border-color:var(--accent); color:var(--accent); }
-
-    /* DIRECTION */
-    .direction-selector { display:flex; gap:6px; }
-    .dir-btn { flex:1; padding:9px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
-    .dir-btn:hover { background:var(--surface3); color:var(--text); }
-    .dir-btn.active { background:rgba(129,140,248,0.15); border-color:var(--accent2); color:var(--accent2); }
-
-    /* REPEATS / LOOP */
-    .repeat-row { display:flex; align-items:center; gap:10px; margin-top:10px; }
-    .repeat-val { font-size:22px; font-weight:700; width:36px; text-align:center; }
-    .loop-pill { padding:6px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--text3); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; margin-left:auto; }
-    .loop-pill:hover { border-color:rgba(52,211,153,0.4); color:var(--accent3); }
-    .loop-pill.active { background:rgba(52,211,153,0.1); border-color:var(--accent3); color:var(--accent3); }
-
-    /* WAVE */
-    .wave-selector { display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
-    .wave-btn { padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; text-align:center; }
-    .wave-btn:hover { background:var(--surface3); color:var(--text); }
-    .wave-btn.active { background:rgba(52,211,153,0.1); border-color:var(--accent3); color:var(--accent3); }
-    .wave-btn .wave-sub { display:block; font-size:9px; opacity:0.6; margin-top:2px; }
-    /* SAMPLE STATUS */
-    .sample-status { font-size:10px; padding:4px 10px; border-radius:8px; background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2); color:var(--gold); margin-top:6px; text-align:center; }
-    .sample-status.loaded { background:rgba(52,211,153,0.1); border-color:rgba(52,211,153,0.2); color:var(--accent3); }
-
-    /* TANPURA */
-    .tanpura-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-    .tanpura-toggle { position:relative; width:44px; height:24px; cursor:pointer; flex-shrink:0; }
-    .tanpura-toggle input { display:none; }
-    .t-slider { position:absolute; inset:0; background:var(--surface3); border-radius:12px; transition:background 0.2s; }
-    .t-slider::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; background:white; border-radius:50%; transition:transform 0.2s; }
-    .tanpura-toggle input:checked + .t-slider { background:var(--accent); }
-    .tanpura-toggle input:checked + .t-slider::after { transform:translateX(20px); }
-
-    /* SAVED */
-    .saved-list { display:flex; flex-direction:column; gap:6px; }
-    .saved-item { display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s; }
-    .saved-item:hover { border-color:rgba(192,132,252,0.3); background:var(--surface3); }
-    .saved-name { font-size:13px; font-weight:600; flex:1; }
-    .saved-notes { font-size:10px; color:var(--text3); }
-    .icon-btn { width:26px; height:26px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:13px; border-radius:4px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
-    .icon-btn:hover { background:rgba(248,113,113,0.15); color:var(--danger); }
-    .icon-btn.play:hover { background:rgba(52,211,153,0.15); color:var(--accent3); }
-
-    /* RIGHT PANEL */
-    .right-panel { display:flex; flex-direction:column; gap:18px; }
-
-    /* SWARA PALETTE */
-    .swara-palette { display:flex; flex-wrap:wrap; gap:7px; }
-    .swara-chip { display:flex; flex-direction:column; align-items:center; padding:9px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s; min-width:56px; user-select:none; }
-    .swara-chip:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
-    .swara-chip .sn { font-size:17px; font-weight:700; }
-    .swara-chip .ss { font-size:9px; color:var(--text3); margin-top:2px; }
-    .swara-chip.komal { background:rgba(248,113,113,0.07); border-color:rgba(248,113,113,0.22); }
-    .swara-chip.komal .sn { color:#f87171; }
-    .swara-chip.teevra { background:rgba(251,191,36,0.07); border-color:rgba(251,191,36,0.22); }
-    .swara-chip.teevra .sn { color:var(--gold); }
-    .swara-chip.shuddh { background:rgba(192,132,252,0.07); border-color:rgba(192,132,252,0.22); }
-    .swara-chip.shuddh .sn { color:var(--accent); }
-    .swara-chip.pa-sa { background:rgba(52,211,153,0.07); border-color:rgba(52,211,153,0.22); }
-    .swara-chip.pa-sa .sn { color:var(--accent3); }
-    .swara-chip.active-note { box-shadow:0 0 16px currentColor; transform:translateY(-3px) scale(1.06); }
-
-    /* PATTERN TRACK */
-    .pattern-track { min-height:68px; background:var(--surface2); border:1px dashed rgba(192,132,252,0.28); border-radius:var(--radius-sm); padding:8px; display:flex; flex-wrap:wrap; gap:5px; align-items:center; position:relative; }
-    .pattern-track.empty::after { content:'Click swaras above to build your alankar…'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--text3); pointer-events:none; }
-
-    .pattern-note { display:inline-flex; flex-direction:column; align-items:center; padding:6px 9px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; position:relative; transition:all 0.2s; min-width:38px; }
-    .pattern-note .dur-badge { font-size:8px; position:absolute; bottom:2px; right:3px; opacity:0.75; font-weight:800; }
-    .pattern-note .oct-badge { font-size:7px; position:absolute; top:2px; right:3px; opacity:0.65; }
-    .pattern-note .del-x { position:absolute; top:-7px; right:-7px; width:15px; height:15px; background:var(--danger); color:white; border-radius:50%; font-size:9px; display:none; align-items:center; justify-content:center; z-index:2; }
-    .pattern-note:hover .del-x { display:flex; }
-    .pattern-note.komal { background:rgba(248,113,113,0.18); border:1px solid rgba(248,113,113,0.4); color:#f87171; }
-    .pattern-note.teevra { background:rgba(251,191,36,0.18); border:1px solid rgba(251,191,36,0.4); color:var(--gold); }
-    .pattern-note.shuddh { background:rgba(192,132,252,0.18); border:1px solid rgba(192,132,252,0.4); color:var(--accent); }
-    .pattern-note.pa-sa { background:rgba(52,211,153,0.18); border:1px solid rgba(52,211,153,0.4); color:var(--accent3); }
-    .pattern-note.dur-half { min-width:56px; } /* wider for half notes */
-    .pattern-note.dur-eighth { min-width:28px; opacity:0.9; } /* narrower for eighth */
-    .pattern-note.playing-note { animation:notePulse 0.25s ease; box-shadow:0 0 18px currentColor !important; }
-    @keyframes notePulse { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
-
-    /* FLOW NOTES */
-    .flow-notes { display:flex; flex-wrap:wrap; gap:3px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); min-height:44px; align-items:center; }
-    .flow-note { padding:3px 8px; border-radius:5px; font-size:12px; font-weight:600; opacity:0.4; background:var(--surface3); color:var(--text2); transition:all 0.1s; }
-    .flow-note.active { opacity:1; background:var(--accent); color:white; box-shadow:0 0 10px var(--glow); transform:scale(1.1); }
-    .flow-note.played { opacity:0.55; }
-    .flow-sep { color:var(--text3); font-size:11px; opacity:0.35; }
-
-    /* PATTERN ACTIONS */
-    .pattern-actions { display:flex; gap:7px; flex-wrap:wrap; margin-top:10px; }
-    .btn { padding:8px 14px; border-radius:var(--radius-sm); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; border:none; display:flex; align-items:center; gap:5px; letter-spacing:0.3px; }
-    .btn-ghost { background:var(--surface2); border:1px solid var(--border); color:var(--text2); }
-    .btn-ghost:hover { background:var(--surface3); color:var(--text); }
-    .btn-danger { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:var(--danger); }
-    .btn-danger:hover { background:rgba(248,113,113,0.2); }
-    .btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; box-shadow:0 4px 14px rgba(192,132,252,0.3); }
-    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(192,132,252,0.4); }
-    .btn-success { background:linear-gradient(135deg,#34d399,#10b981); color:white; box-shadow:0 4px 14px rgba(52,211,153,0.3); }
-    .btn-success:hover { transform:translateY(-1px); }
-    .btn-gold { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#1a1000; box-shadow:0 4px 14px rgba(251,191,36,0.3); }
-    .btn-gold:hover { transform:translateY(-1px); }
-
-    /* PRESETS GRID */
-    .presets-filter { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
-    .filter-btn { padding:5px 12px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; border:1px solid var(--border); background:var(--surface2); color:var(--text3); transition:all 0.2s; }
-    .filter-btn:hover { border-color:rgba(192,132,252,0.3); color:var(--text); }
-    .filter-btn.active { background:rgba(192,132,252,0.15); border-color:var(--accent); color:var(--accent); }
-    .presets-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:9px; max-height:520px; overflow-y:auto; }
-    .preset-card { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:13px; cursor:pointer; transition:all 0.2s; }
-    .preset-card:hover { border-color:rgba(192,132,252,0.35); background:var(--surface3); transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,0.3); }
-    .preset-card.selected { border-color:var(--accent); background:rgba(192,132,252,0.07); }
-    .preset-card.hidden { display:none; }
-    .preset-name { font-size:13px; font-weight:600; margin-bottom:5px; }
-    .preset-notes { font-size:11px; color:var(--text3); font-family:monospace; line-height:1.5; }
-    .preset-tags { display:flex; gap:4px; margin-top:7px; flex-wrap:wrap; }
-    .tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:20px; background:rgba(129,140,248,0.1); border:1px solid rgba(129,140,248,0.2); color:var(--accent2); }
-    .tag.beginner { background:rgba(52,211,153,0.1); border-color:rgba(52,211,153,0.25); color:var(--accent3); }
-    .tag.intermediate { background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.25); color:var(--gold); }
-    .tag.advanced { background:rgba(248,113,113,0.1); border-color:rgba(248,113,113,0.25); color:var(--danger); }
-
-    /* ──────── PATTERN GENERATOR ──────── */
-    .thaat-select-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
-    .thaat-select { background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; font-weight:600; padding:8px 12px; outline:none; cursor:pointer; font-family:'Outfit',sans-serif; flex:1; }
-    .thaat-select:focus { border-color:var(--accent); }
-    .thaat-notes-strip { display:flex; flex-wrap:wrap; gap:5px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); margin-bottom:10px; min-height:52px; align-items:center; }
-    .thaat-note-chip { padding:5px 12px; border-radius:6px; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.18s; border:1px solid transparent; user-select:none; }
-    .thaat-note-chip:hover { transform:translateY(-2px); }
-    .gen-input-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
-    .gen-input-track { display:flex; gap:5px; flex-wrap:wrap; min-height:36px; padding:6px 10px; background:var(--surface2); border:1px dashed rgba(192,132,252,0.3); border-radius:8px; flex:1; align-items:center; position:relative; }
-    .gen-input-track.empty::after { content:'Click thaat notes above…'; font-size:11px; color:var(--text3); pointer-events:none; }
-    .gen-note-pill { padding:4px 10px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; position:relative; display:flex; align-items:center; }
-    .gen-note-pill .del-g { position:absolute; top:-5px; right:-5px; width:13px; height:13px; background:var(--danger); border-radius:50%; font-size:8px; display:none; align-items:center; justify-content:center; color:white; }
-    .gen-note-pill:hover .del-g { display:flex; }
-    .gen-results { display:flex; flex-direction:column; gap:7px; margin-top:12px; max-height:400px; overflow-y:auto; }
-    .gen-row { display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); transition:all 0.18s; }
-    .gen-row:hover { border-color:rgba(192,132,252,0.3); background:var(--surface3); }
-    .gen-row.gen-row-active { border-color:var(--accent3) !important; background:rgba(52,211,153,0.07) !important; }
-    .gen-row-num { font-size:11px; color:var(--text3); font-weight:700; width:20px; flex-shrink:0; }
-    .gen-row-notes { display:flex; gap:4px; flex-wrap:wrap; flex:1; }
-    .gen-note-badge { padding:3px 8px; border-radius:5px; font-size:12px; font-weight:700; transition:all 0.12s; }
-    .gen-note-badge.playing-badge { box-shadow:0 0 10px currentColor; transform:scale(1.18); }
-    .gen-row-actions { display:flex; gap:5px; flex-shrink:0; }
-    /* GEN PLAYBACK STRIP */
-    .gen-playback-strip { min-height:44px; background:var(--surface2); border:1px solid rgba(52,211,153,0.3); border-radius:var(--radius-sm); padding:8px 12px; display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-bottom:10px; }
-    .gen-playback-strip.hidden { display:none; }
-    .gps-note { padding:4px 9px; border-radius:6px; font-size:13px; font-weight:700; opacity:0.38; transition:all 0.1s; }
-    .gps-note.active { opacity:1; box-shadow:0 0 14px currentColor; transform:scale(1.12); }
-    .gps-note.played { opacity:0.55; }
-    .gen-btn { padding:5px 11px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; border:none; transition:all 0.15s; }
-    .gen-btn-load { background:rgba(192,132,252,0.15); border:1px solid rgba(192,132,252,0.3); color:var(--accent); }
-    .gen-btn-load:hover { background:rgba(192,132,252,0.25); }
-    .gen-btn-play { background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.3); color:var(--accent3); }
-    .gen-btn-play:hover { background:rgba(52,211,153,0.25); }
-
-    /* PLAYBACK BAR */
-    .playback-bar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 22px; display:flex; align-items:center; gap:16px; position:sticky; bottom:16px; backdrop-filter:blur(20px); box-shadow:0 8px 32px rgba(0,0,0,0.45); }
-    .play-btn { width:54px; height:54px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 18px rgba(192,132,252,0.4); transition:all 0.2s; flex-shrink:0; }
-    .play-btn:hover { transform:scale(1.08); box-shadow:0 6px 24px rgba(192,132,252,0.5); }
-    .play-btn.playing { background:linear-gradient(135deg,#f87171,#ef4444); box-shadow:0 4px 18px rgba(248,113,113,0.4); }
-    .loop-btn { width:40px; height:40px; border-radius:50%; border:2px solid var(--border); background:var(--surface2); color:var(--text3); font-size:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; }
-    .loop-btn.active { border-color:var(--accent3); color:var(--accent3); background:rgba(52,211,153,0.1); box-shadow:0 0 12px rgba(52,211,153,0.25); }
-    .playback-info { flex:1; min-width:0; }
-    .now-label { font-size:10px; color:var(--text3); font-weight:600; letter-spacing:1px; }
-    .now-note { font-size:28px; font-weight:800; color:var(--accent); min-height:34px; transition:all 0.08s; }
-    .progress-wrap { width:100%; height:5px; background:var(--surface3); border-radius:3px; margin-top:7px; }
-    .progress-bar { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width 0.12s linear; width:0%; }
-    .playback-stats { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
-    .stat-pill { font-size:11px; font-weight:600; padding:4px 11px; border-radius:20px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); white-space:nowrap; }
-    .beat-dots { display:flex; gap:5px; align-items:center; flex-wrap:wrap; max-width:50px; }
-    .beat-dot { width:7px; height:7px; border-radius:50%; background:var(--surface3); transition:all 0.1s; }
-    .beat-dot.on { background:var(--accent); box-shadow:0 0 7px var(--glow); transform:scale(1.3); }
-
-    /* VIZ */
-    .viz-wrap { display:flex; align-items:flex-end; gap:2px; height:30px; padding:0 4px; }
-    .viz-bar { flex:1; background:rgba(192,132,252,0.25); border-radius:2px 2px 0 0; transition:height 0.05s,background 0.05s; min-height:2px; }
-
-    /* MODAL */
-    .modal-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.72); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:all 0.25s; }
-    .modal-overlay.open { opacity:1; pointer-events:auto; }
-    .modal { background:var(--surface); border:1px solid rgba(192,132,252,0.3); border-radius:var(--radius); padding:26px; width:360px; max-width:95vw; transform:translateY(20px); transition:transform 0.25s; box-shadow:0 16px 48px rgba(0,0,0,0.5); }
-    .modal-overlay.open .modal { transform:translateY(0); }
-    .modal h3 { font-size:17px; font-weight:700; margin-bottom:14px; }
-    .modal input { width:100%; padding:11px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-family:'Outfit',sans-serif; outline:none; transition:border-color 0.2s; }
-    .modal input:focus { border-color:var(--accent); }
-    .modal-actions { display:flex; gap:8px; margin-top:14px; justify-content:flex-end; }
-
-    /* TOAST */
-    .toast { position:fixed; bottom:96px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--surface); border:1px solid rgba(52,211,153,0.4); color:var(--accent3); padding:9px 20px; border-radius:30px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:all 0.28s; z-index:300; white-space:nowrap; }
-    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-    ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:3px; }
-  </style>
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/tokens.css" />
+  <link rel="stylesheet" href="/css/animations.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
 </head>
 <body>
 
+<!-- ── HEADER ──────────────────────────────────────────────────────────── -->
 <header>
   <div class="logo">
-    <div class="logo-icon">🎵</div>
+    <div class="logo-icon" aria-hidden="true">🎵</div>
     <div class="logo-text">Raag <span>Studio</span></div>
+    <div class="viz-wrap" id="vizBars" aria-hidden="true"></div>
   </div>
-  <div style="display:flex;align-items:center;gap:12px">
-    <div class="viz-wrap" id="vizBars"></div>
-    <div class="header-badge">ALANKAR PRACTICE</div>
+  <div class="header-right">
+    <span class="header-badge">Hindustani</span>
+    <button class="pwa-install-btn" id="pwaInstallBtn" title="Install as app">⬇ Install</button>
+    <button class="btn btn-ghost" id="shareBtn" title="Share pattern (Shift+S)" style="font-size:13px">🔗 Share</button>
   </div>
 </header>
 
-<div class="app">
+<!-- ── OFFLINE BANNER ──────────────────────────────────────────────────── -->
+<div class="offline-banner" role="status">⚠ You are offline — samples from cache only</div>
 
-  <!-- ═══════════ LEFT PANEL ═══════════ -->
-  <div class="left-panel">
+<!-- ── MAIN ───────────────────────────────────────────────────────────── -->
+<main class="app" id="app">
 
-    <div class="card">
-      <div class="card-title">Base Pitch (Sa)</div>
-      <div class="pitch-grid" id="pitchGrid"></div>
-    </div>
+  <!-- ════════════════════════════════════════════════
+       LEFT PANEL
+  ═════════════════════════════════════════════════ -->
+  <aside class="left-panel" aria-label="Controls">
 
-    <div class="card">
-      <div class="card-title">Starting Octave</div>
-      <div class="octave-selector">
-        <button class="oct-btn" data-oct="-1" onclick="setOctave(-1)">Mandra <span class="oct-hi">Low</span></button>
-        <button class="oct-btn active" data-oct="0" onclick="setOctave(0)">Madhya <span class="oct-hi">Mid</span></button>
-        <button class="oct-btn" data-oct="1" onclick="setOctave(1)">Taar <span class="oct-hi">High</span></button>
+    <!-- SA Pitch -->
+    <section class="card card-collapsible" id="pitchCard">
+      <div class="card-header">
+        <h2 class="card-title">Sa (Root Pitch)</h2>
+        <button class="card-collapse-btn" aria-label="Collapse">▼</button>
       </div>
-    </div>
+      <div class="card-body">
+        <div class="pitch-grid" id="pitchGrid" role="group" aria-label="Select root pitch"></div>
+      </div>
+    </section>
 
-    <div class="card">
-      <div class="card-title">Tempo</div>
-      <div class="tempo-display">
-        <div>
-          <div class="tempo-value" id="tempoDisplay">80</div>
-          <div class="tempo-label">BPM</div>
+    <!-- Octave -->
+    <section class="card card-collapsible" id="octaveCard">
+      <div class="card-header">
+        <h2 class="card-title">Octave Range</h2>
+        <button class="card-collapse-btn" aria-label="Collapse">▼</button>
+      </div>
+      <div class="card-body">
+        <div class="octave-selector" role="group" aria-label="Select starting octave">
+          <button class="oct-btn" data-oct="-1" id="octM1">Mandra<span class="oct-hi">Lower</span></button>
+          <button class="oct-btn active" data-oct="0" id="oct0">Madhya<span class="oct-hi">Middle</span></button>
+          <button class="oct-btn" data-oct="1" id="oct1">Taar<span class="oct-hi">Upper</span></button>
         </div>
-        <div class="tempo-btns">
-          <button class="tempo-adj" onclick="adjustTempo(-5)">−</button>
-          <button class="tempo-adj" onclick="adjustTempo(5)">+</button>
+      </div>
+    </section>
+
+    <!-- Tempo -->
+    <section class="card card-collapsible" id="tempoCard">
+      <div class="card-header">
+        <h2 class="card-title">Tempo</h2>
+        <button class="card-collapse-btn" aria-label="Collapse">▼</button>
+      </div>
+      <div class="card-body">
+        <div class="tempo-display">
+          <div>
+            <div class="tempo-value" id="tempoDisplay" aria-live="polite">80</div>
+            <div class="tempo-label">BPM</div>
+          </div>
+          <div class="tempo-btns">
+            <button class="tempo-adj" data-adj="-5" aria-label="Decrease tempo by 5">−</button>
+            <button class="tempo-adj" data-adj="5"  aria-label="Increase tempo by 5">+</button>
+            <button class="tap-btn" id="tapBtn" title="Tap tempo (T)" aria-label="Tap tempo">TAP</button>
+          </div>
+        </div>
+        <input type="range" id="tempoSlider" min="30" max="500" value="80" aria-label="Tempo slider" />
+        <div class="speed-btns" style="margin-top:10px">
+          <button class="speed-btn" data-speed="half"   title="½ speed ([ key)">½×</button>
+          <button class="speed-btn" data-speed="double" title="2× speed (] key)">2×</button>
+        </div>
+        <div class="beat-type-row" role="group" aria-label="Beats per cycle">
+          <button class="beat-type-btn"        data-beats="3">3-beat</button>
+          <button class="beat-type-btn active" data-beats="4">4-beat</button>
+          <button class="beat-type-btn"        data-beats="5">5-beat</button>
         </div>
       </div>
-      <input type="range" id="tempoSlider" min="30" max="500" value="80" oninput="setTempo(this.value)" />
-      <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--text3)">
-        <span>Vilambit 30</span><span>Drut 500</span>
-      </div>
-      <div class="speed-btns">
-        <button class="speed-btn" onclick="halfSpeed()" title="Halve current BPM (shortcut: [)">½× Slow</button>
-        <button class="speed-btn" onclick="doubleSpeed()" title="Double current BPM (shortcut: ])">2× Fast</button>
-      </div>
-      <div style="font-size:10px;color:var(--text3);margin-top:10px;margin-bottom:4px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Beat Type</div>
-      <div class="beat-type-row">
-        <button class="beat-type-btn" data-beats="3" onclick="setBeatType(3)">3-Beat</button>
-        <button class="beat-type-btn active" data-beats="4" onclick="setBeatType(4)">4-Beat</button>
-        <button class="beat-type-btn" data-beats="5" onclick="setBeatType(5)">5-Beat</button>
-      </div>
-    </div>
+    </section>
 
-    <!-- NOTE OPTIONS: Duration + Octave offset -->
-    <div class="card">
-      <div class="card-title">Next Note Options</div>
+    <!-- Note Options -->
+    <section class="card" id="noteOptsCard">
+      <h2 class="card-title">Note Options</h2>
       <div class="note-opts-grid">
         <div>
           <div class="opts-label">Duration</div>
-          <div class="seg-btns" id="durBtns">
-            <button class="seg-btn" data-dur="2" onclick="setNextDur(2)" title="Half note – holds 2 beats">½♩</button>
-            <button class="seg-btn active-dur" data-dur="1" onclick="setNextDur(1)" title="Quarter note – 1 beat">♩</button>
-            <button class="seg-btn" data-dur="0.5" onclick="setNextDur(0.5)" title="Eighth note – half beat">♪×2</button>
+          <div class="seg-btns" id="durBtns" role="group" aria-label="Note duration">
+            <button class="seg-btn" data-dur="2">½</button>
+            <button class="seg-btn active-dur" data-dur="1">♩</button>
+            <button class="seg-btn" data-dur="0.5">♪</button>
           </div>
         </div>
         <div>
           <div class="opts-label">Octave Shift</div>
-          <div class="seg-btns" id="octOffBtns">
-            <button class="seg-btn" data-off="-1" onclick="setNextOct(-1)">₋ Low</button>
-            <button class="seg-btn active-oct" data-off="0" onclick="setNextOct(0)">Mid</button>
-            <button class="seg-btn" data-off="1" onclick="setNextOct(1)">⁺ Hi</button>
+          <div class="seg-btns" id="octOffBtns" role="group" aria-label="Octave offset">
+            <button class="seg-btn" data-off="-1">-</button>
+            <button class="seg-btn active-oct" data-off="0">·</button>
+            <button class="seg-btn" data-off="1">+</button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div class="card-title">Direction</div>
-      <div class="direction-selector">
-        <button class="dir-btn active" data-dir="up" onclick="setDirection('up')">↑ Aaroha</button>
-        <button class="dir-btn" data-dir="down" onclick="setDirection('down')">↓ Avroha</button>
-        <button class="dir-btn" data-dir="both" onclick="setDirection('both')">↕ Both</button>
+    <!-- Direction & Repeats -->
+    <section class="card" id="directionCard">
+      <h2 class="card-title">Direction & Repeats</h2>
+      <div class="direction-selector" role="group" aria-label="Playback direction">
+        <button class="dir-btn active" data-dir="up"   title="Aroha — ascending">↑ Aaroh</button>
+        <button class="dir-btn"        data-dir="down" title="Avaroh — descending">↓ Avroh</button>
+        <button class="dir-btn"        data-dir="both" title="Both directions">↕ Both</button>
       </div>
       <div class="repeat-row">
-        <button class="tempo-adj" onclick="adjustRepeats(-1)">−</button>
+        <button class="tempo-adj repeat-adj" data-adj="-1" aria-label="Decrease repeats">−</button>
         <div class="repeat-val" id="repeatVal">1</div>
-        <button class="tempo-adj" onclick="adjustRepeats(1)">+</button>
-        <span style="font-size:11px;color:var(--text3)">cycles</span>
-        <button class="loop-pill" id="loopPill" onclick="toggleLoop()">∞ Loop OFF</button>
+        <button class="tempo-adj repeat-adj" data-adj="1"  aria-label="Increase repeats">+</button>
+        <span style="font-size:12px;color:var(--text3)">cycles</span>
+        <button class="loop-pill" id="loopPill" title="Loop (L key)">∞ Loop OFF</button>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div class="card-title">Instrument Sound</div>
-      <div class="wave-selector">
-        <button class="wave-btn active" data-wave="sitar" onclick="setWave('sitar')">🎸 Sitar<span class="wave-sub">Real Samples</span></button>
-        <button class="wave-btn" data-wave="flute" onclick="setWave('flute')">🪈 Bansuri<span class="wave-sub">Real Samples</span></button>
-        <button class="wave-btn" data-wave="sarangi" onclick="setWave('sarangi')">🎻 Violin<span class="wave-sub">Real Samples</span></button>
-        <button class="wave-btn" data-wave="harmonium" onclick="setWave('harmonium')">🎹 Harmonium<span class="wave-sub">Real Samples</span></button>
+    <!-- Instrument -->
+    <section class="card card-collapsible" id="instrumentCard">
+      <div class="card-header">
+        <h2 class="card-title">Instrument</h2>
+        <button class="card-collapse-btn" aria-label="Collapse">▼</button>
       </div>
-      <div class="sample-status" id="sampleStatus">⏳ Real samples will load on first use</div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Tanpura Drone</div>
-      <div class="tanpura-row">
-        <label class="tanpura-toggle">
-          <input type="checkbox" id="tanpuraToggle" onchange="toggleTanpura()" />
-          <span class="t-slider"></span>
-        </label>
-        <span style="font-size:13px;font-weight:500;color:var(--text2)">Enable Tanpura</span>
-        <select id="tanpuraTuning" onchange="restartTanpura()" style="margin-left:auto;background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 8px;font-size:11px;outline:none">
-          <option value="sa-pa">Sa–Pa</option>
-          <option value="sa-ma">Sa–Ma</option>
-          <option value="sa-ni">Sa–Ni</option>
-        </select>
+      <div class="card-body">
+        <div class="wave-selector" role="group" aria-label="Select instrument">
+          <button class="wave-btn active" data-wave="sitar">🎸 Sitar<span class="wave-sub">Karplus-Strong + Sample</span></button>
+          <button class="wave-btn"        data-wave="flute">🪈 Bansuri<span class="wave-sub">Breath + Sample</span></button>
+          <button class="wave-btn"        data-wave="sarangi">🎻 Sarangi<span class="wave-sub">Bowed + Sample</span></button>
+          <button class="wave-btn"        data-wave="harmonium">🎹 Harmonium<span class="wave-sub">Reed + Sample</span></button>
+        </div>
+        <div class="sample-status" id="sampleStatus">Click to load samples</div>
       </div>
-      <input type="range" id="tanpuraVol" min="0" max="100" value="30" oninput="setTanpuraVol(this.value)" />
-      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text3)"><span>Soft</span><span>Loud</span></div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="card-title" style="margin-bottom:0">My Alankars</div>
-        <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openSaveModal()">💾 Save</button>
+    <!-- Tanpura -->
+    <section class="card card-collapsible" id="tanpuraCard">
+      <div class="card-header">
+        <h2 class="card-title">Tanpura Drone</h2>
+        <button class="card-collapse-btn" aria-label="Collapse">▼</button>
       </div>
-      <div class="saved-list" id="savedList">
-        <div style="font-size:12px;color:var(--text3);text-align:center;padding:10px">No saved alankars yet</div>
+      <div class="card-body">
+        <div class="tanpura-row">
+          <label class="tanpura-toggle" aria-label="Toggle tanpura drone">
+            <input type="checkbox" id="tanpuraToggle" />
+            <span class="t-slider"></span>
+          </label>
+          <span style="font-size:13px;font-weight:600">Tanpura Drone</span>
+          <select id="tanpuraTuning" aria-label="Tanpura tuning" style="margin-left:auto">
+            <option value="sa-pa">Sa–Pa</option>
+            <option value="sa-ma">Sa–Ma</option>
+            <option value="sa-ni">Sa–Ni</option>
+          </select>
+        </div>
+        <div style="margin-top:8px">
+          <div class="opts-label">Volume</div>
+          <input type="range" id="tanpuraVol" min="10" max="100" value="30" aria-label="Tanpura volume" />
+        </div>
       </div>
-    </div>
+    </section>
 
-  </div>
+    <!-- Saved Alankars -->
+    <section class="card card-collapsible" id="savedCard">
+      <div class="card-header">
+        <h2 class="card-title">💾 Saved Alankars</h2>
+        <button class="card-collapse-btn" aria-label="Collapse">▼</button>
+      </div>
+      <div class="card-body">
+        <div class="saved-list" id="savedList"></div>
+      </div>
+    </section>
 
-  <!-- ═══════════ RIGHT PANEL ═══════════ -->
+  </aside><!-- /left-panel -->
+
+  <!-- ════════════════════════════════════════════════
+       RIGHT PANEL
+  ═════════════════════════════════════════════════ -->
   <div class="right-panel">
 
     <!-- SWARA PALETTE -->
-    <div class="card">
-      <div class="card-title">Swara Palette <span style="font-weight:400;color:var(--text3);font-size:11px;text-transform:none;letter-spacing:0;margin-left:4px">— click to add to pattern</span></div>
-      <div class="swara-palette" id="swaraPalette"></div>
-    </div>
+    <section class="card" id="paletteCard" aria-label="Swara palette">
+      <div class="card-header">
+        <h2 class="card-title">Swara Palette</h2>
+        <span style="font-size:11px;color:var(--text3)" id="keyboardHint">Keys: s r R g G m M p d D n N ↑↓ tempo ·  Space=play</span>
+      </div>
+      <div class="swara-palette" id="swaraPalette" role="group" aria-label="Select a swara to add to your pattern"></div>
+    </section>
 
     <!-- PATTERN BUILDER -->
-    <div class="card">
-      <div class="card-title">Pattern Builder</div>
-      <div class="pattern-track" id="patternTrack"></div>
-      <div style="margin-top:9px">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Full Sequence Preview</div>
-        <div class="flow-notes" id="flowNotes"></div>
+    <section class="card" id="patternCard">
+      <div class="card-header">
+        <h2 class="card-title">Pattern Builder</h2>
+        <span style="font-size:11px;color:var(--text3)">Click a swara above · Backspace=undo · Delete=clear</span>
       </div>
+      <!-- Pattern track -->
+      <div class="pattern-track empty" id="patternTrack" aria-label="Your pattern" role="list"></div>
+      <!-- Flow preview -->
+      <div style="margin-top:10px">
+        <div class="opts-label" style="margin-bottom:6px">Full sequence preview</div>
+        <div class="flow-notes" id="flowNotes" aria-label="Full playback sequence" aria-live="polite"></div>
+      </div>
+      <!-- Actions -->
       <div class="pattern-actions">
-        <button class="btn btn-ghost" onclick="undoLast()">↩ Undo</button>
-        <button class="btn btn-danger" onclick="clearPattern()">✕ Clear</button>
-        <button class="btn btn-ghost" onclick="reversePattern()">⇄ Reverse</button>
-        <button class="btn btn-primary" id="buildPlayBtn" onclick="togglePlay()">▶ Play</button>
+        <button class="btn btn-primary" id="buildPlayBtn">▶ Play</button>
+        <button class="btn btn-ghost"   id="undoBtn"   title="Undo last (Backspace)">↩ Undo</button>
+        <button class="btn btn-ghost"   id="reverseBtn" title="Reverse pattern">⇄ Reverse</button>
+        <button class="btn btn-ghost"   id="saveBtn"    title="Save alankar">💾 Save</button>
+        <button class="btn btn-danger"  id="clearBtn"   title="Clear pattern (Delete)">🗑 Clear</button>
       </div>
-    </div>
+    </section>
 
-    <!-- ═══ PATTERN GENERATOR ═══ -->
-    <div class="card">
-      <div class="card-title">Alankar Pattern Generator <span style="font-weight:400;color:var(--accent3);font-size:10px;text-transform:none;letter-spacing:0;margin-left:6px;background:rgba(52,211,153,0.1);padding:2px 7px;border-radius:10px;border:1px solid rgba(52,211,153,0.2)">NEW</span></div>
+    <!-- PRESETS -->
+    <section class="card" id="presetsCard">
+      <h2 class="card-title">Preset Alankars</h2>
+      <div class="presets-filter" id="presetsFilter" role="group" aria-label="Filter presets by difficulty"></div>
+      <div class="presets-grid" id="presetsGrid" aria-label="Preset alankar library"></div>
+    </section>
 
-      <!-- Thaat Selector -->
+    <!-- PATTERN GENERATOR -->
+    <section class="card" id="generatorCard">
+      <h2 class="card-title">⚡ Pattern Generator</h2>
+
+      <!-- Thaat select -->
       <div class="thaat-select-row">
-        <select class="thaat-select" id="thaatSelect" onchange="onThaatChange()">
-          <option value="Bilawal">Bilawal — S R G m P D N S'</option>
-          <option value="Khamaj">Khamaj — S R G m P D n S'</option>
-          <option value="Kafi">Kafi — S R g m P D n S'</option>
-          <option value="Asavari">Asavari — S R g m P d n S'</option>
-          <option value="Bhairavi">Bhairavi — S r g m P d n S'</option>
-          <option value="Bhairav">Bhairav — S r G m P d N S'</option>
-          <option value="Kalyan">Kalyan — S R G M P D N S'</option>
-          <option value="Marwa">Marwa — S r G M P D N S'</option>
-          <option value="Poorvi">Poorvi — S r G M P d N S'</option>
-          <option value="Todi">Todi — S r g M P d N S'</option>
-        </select>
-        <button class="btn btn-ghost" onclick="clearGenInput()" style="flex-shrink:0">Clear Input</button>
+        <label for="thaatSelect" style="font-size:12px;color:var(--text3);font-weight:600">Thaat:</label>
+        <select class="thaat-select" id="thaatSelect" aria-label="Select thaat"></select>
       </div>
 
-      <!-- Thaat Notes Strip (clickable) -->
-      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Thaat Scale — click notes to build input pattern</div>
-      <div class="thaat-notes-strip" id="thaatNotesStrip"></div>
+      <!-- Thaat scale strip -->
+      <div class="thaat-notes-strip" id="thaatNotesStrip" aria-label="Thaat notes — click to build input pattern"></div>
 
-      <!-- Generator Input Pattern -->
-      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase">Your Input Pattern</div>
+      <!-- Generator input -->
       <div class="gen-input-row">
-        <div class="gen-input-track" id="genInputTrack"></div>
+        <div class="gen-input-track empty" id="genInputTrack" aria-label="Input pattern for generator"></div>
+        <button class="btn btn-danger" id="clearGenBtn" title="Clear input">✕</button>
       </div>
 
-      <!-- Controls Row -->
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-        <button class="btn btn-gold" onclick="generateShifts()" style="flex-shrink:0">⚡ Generate All Shifts</button>
-        <button class="btn btn-success" onclick="playAllShifts()" style="flex-shrink:0" id="genPlayAllBtn">▶ Play All</button>
-        <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
-          <span style="font-size:11px;color:var(--text3)">Reps/shift:</span>
-          <button class="tempo-adj" style="width:26px;height:26px;font-size:14px" onclick="adjustGenReps(-1)">−</button>
-          <span id="genRepsVal" style="font-size:14px;font-weight:700;width:22px;text-align:center">1</span>
-          <button class="tempo-adj" style="width:26px;height:26px;font-size:14px" onclick="adjustGenReps(1)">+</button>
+      <!-- Options -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <!-- Direction -->
+        <div>
+          <div class="opts-label" style="margin-bottom:4px">Direction</div>
+          <div style="display:flex;gap:5px">
+            <button class="beat-type-btn active" data-gdir="aaroh"  style="padding:6px 10px;font-size:11px">↑ Aaroh</button>
+            <button class="beat-type-btn"        data-gdir="avroh"  style="padding:6px 10px;font-size:11px">↓ Avroh</button>
+            <button class="beat-type-btn"        data-gdir="both"   style="padding:6px 10px;font-size:11px">↕ Both</button>
+          </div>
+        </div>
+        <!-- Reps per shift -->
+        <div>
+          <div class="opts-label" style="margin-bottom:4px">Reps/Shift</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="tempo-adj gen-rep-adj" data-adj="-1" aria-label="Fewer reps">−</button>
+            <span id="genRepsVal" style="font-size:18px;font-weight:700;width:24px;text-align:center">1</span>
+            <button class="tempo-adj gen-rep-adj" data-adj="1"  aria-label="More reps">+</button>
+          </div>
+        </div>
+        <!-- Generate + Play All -->
+        <div style="display:flex;gap:6px;margin-left:auto;align-items:flex-end">
+          <button class="btn btn-gold"    id="generateBtn">⚡ Generate</button>
+          <button class="btn btn-success" id="playAllBtn">▶ Play All</button>
         </div>
       </div>
-      <!-- Generator Direction -->
-      <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">
-        <span style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;white-space:nowrap">Direction:</span>
-        <button class="beat-type-btn active" data-gdir="aaroh" onclick="setGenDirection('aaroh')">↑ Aaroh</button>
-        <button class="beat-type-btn" data-gdir="avroh" onclick="setGenDirection('avroh')">↓ Avroh</button>
-        <button class="beat-type-btn" data-gdir="both" onclick="setGenDirection('both')">⇅ Both</button>
-      </div>
 
-      <!-- Gen Playback Strip -->
-      <div id="genPlaybackLabel" style="font-size:10px;color:var(--accent3);font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px;display:none">▶ Now Playing Shift</div>
-      <div class="gen-playback-strip hidden" id="genPlaybackStrip"></div>
+      <!-- Playback strip -->
+      <div class="opts-label hidden" id="genPlaybackLabel"></div>
+      <div class="gen-playback-strip hidden" id="genPlaybackStrip" aria-live="polite"></div>
 
-      <!-- Generated Results -->
-      <div class="gen-results" id="genResults">
+      <!-- Results -->
+      <div class="gen-results" id="genResults" aria-label="Generated patterns">
         <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">
           Select a thaat, build an input pattern, then click ⚡ Generate
         </div>
       </div>
+      </section>
+
+  </div><!-- /right-panel (generator end) -->
+
+  <!-- ══════════════════════════════════════════════
+       TALA COMPANION — Full-width panel below grid
+  ═══════════════════════════════════════════════ -->
+  <section class="card" id="talaCard" style="grid-column:1/-1;margin-top:0" aria-label="Tala Companion">
+
+    <!-- Header -->
+    <div class="tala-header-row">
+      <div class="tala-active-dot" id="talaActiveDot"></div>
+      <h2 class="card-title" style="margin:0">🥁 Tala Companion</h2>
+      <div class="tala-pills">
+        <span class="tala-pill" id="talaCurrentBeat">—</span>
+        <span class="tala-pill" id="talaCurrentCycle">Cycle 0</span>
+      </div>
+      <span class="tala-status" id="talaStatus">Stopped</span>
     </div>
 
-    <!-- PRESETS -->
-    <div class="card">
-      <div class="card-title">Preset Alankars</div>
-      <div class="presets-filter" id="presetsFilter"></div>
-      <div class="presets-grid" id="presetsGrid"></div>
+    <!-- Tala select + start -->
+    <div class="tala-select-wrap">
+      <select id="talaSelect" aria-label="Select tala"></select>
+      <button id="talaStartBtn" aria-label="Start or stop tabla">▶ Start</button>
     </div>
 
-    <!-- PLAYBACK BAR -->
-    <div class="playback-bar">
-      <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
-      <button class="loop-btn" id="loopBtn" onclick="toggleLoop()" title="Toggle Loop (L)">∞</button>
-      <div class="playback-info">
-        <div class="now-label">NOW PLAYING</div>
-        <div class="now-note" id="nowNote">—</div>
-        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <!-- Ring + Bol strip -->
+    <div class="tala-main-row">
+
+      <!-- Avarta ring -->
+      <div class="avarta-ring-wrap">
+        <svg id="avartaRing" viewBox="0 0 120 120" aria-hidden="true"></svg>
+        <div class="tala-bpm-group">
+          <button class="tempo-adj" data-talabpm="-5" aria-label="Decrease tabla tempo">−</button>
+          <div>
+            <div class="tala-bpm-val" id="talaBPMDisplay">80</div>
+            <div class="tala-bpm-label">BPM</div>
+          </div>
+          <button class="tempo-adj" data-talabpm="5" aria-label="Increase tabla tempo">+</button>
+        </div>
+        <input type="range" id="talaBPMSlider" min="20" max="400" value="80"
+               aria-label="Tabla tempo slider" style="width:110px" />
       </div>
-      <div style="display:flex;flex-direction:column;gap:7px;align-items:center">
-        <div class="beat-dots" id="beatDots"></div>
-        <div class="stat-pill" id="statPill">Ready</div>
+
+      <!-- Bol strip -->
+      <div class="bol-strip-wrap">
+        <div class="bol-strip-label">Bol Notation</div>
+        <div id="bolStrip" role="list" aria-label="Tala bol sequence" aria-live="polite"></div>
       </div>
-      <div class="playback-stats">
-        <div class="stat-pill" id="tempoPill">80 BPM</div>
-        <div class="stat-pill" id="pitchPill">C (Sa)</div>
-        <div class="stat-pill" id="cyclePill">Cycle 0/3</div>
+
+    </div><!-- /tala-main-row -->
+
+    <!-- Controls row -->
+    <div class="tala-controls-row">
+      <div class="mute-btns">
+        <button class="mute-btn" id="muteDayanBtn" title="Mute dayan (right drum)">Dayan</button>
+        <button class="mute-btn" id="muteBayanBtn" title="Mute bayan (left drum)">Bayan</button>
+      </div>
+      <div class="tala-slider-row" style="flex:1">
+        <label for="talaVol">Volume</label>
+        <input type="range" id="talaVol" min="0" max="100" value="75" aria-label="Tabla volume" />
+      </div>
+      <div class="tala-slider-row" style="flex:1">
+        <label for="humanizeSlider">Humanize</label>
+        <input type="range" id="humanizeSlider" min="0" max="30" value="10" aria-label="Timing humanization" />
       </div>
     </div>
 
+    <!-- Riyaz Mode -->
+    <div class="riyaz-toggle-row">
+      <span class="riyaz-label">🧘 Riyaz Mode — Progressive Tempo Training</span>
+      <label class="tanpura-toggle" aria-label="Toggle Riyaz mode">
+        <input type="checkbox" id="riyazToggle" />
+        <span class="t-slider"></span>
+      </label>
+    </div>
+    <div id="riyazPanel">
+      <div class="riyaz-grid">
+        <div class="riyaz-field">
+          <label for="riyazStartBPM">Start BPM</label>
+          <input type="number" id="riyazStartBPM" value="60" min="20" max="400" />
+        </div>
+        <div class="riyaz-field">
+          <label for="riyazTargetBPM">Target BPM</label>
+          <input type="number" id="riyazTargetBPM" value="140" min="20" max="500" />
+        </div>
+        <div class="riyaz-field">
+          <label for="riyazStepBPM">Step BPM</label>
+          <input type="number" id="riyazStepBPM" value="5" min="1" max="50" />
+        </div>
+        <div class="riyaz-field">
+          <label for="riyazIntervalSec">Interval (sec)</label>
+          <input type="number" id="riyazIntervalSec" value="30" min="5" max="600" />
+        </div>
+      </div>
+      <div class="riyaz-progress-row">
+        <div class="riyaz-progress-bar-bg">
+          <div id="riyazProgress"></div>
+        </div>
+        <span id="riyazCurrentBPM">60 BPM</span>
+      </div>
+      <button id="riyazStartRiyazBtn">⚡ Start Riyaz</button>
+    </div>
+
+  </section><!-- /talaCard -->
+
+</main><!-- /app -->
+
+<!-- ── PLAYBACK BAR ────────────────────────────────────────────────────── -->
+<div class="playback-bar" role="status" aria-label="Playback controls">
+  <button class="play-btn" id="playBtn" title="Play / Stop (Space)" aria-label="Play or stop">▶</button>
+  <button class="loop-btn" id="loopBtn" title="Loop (L)" aria-label="Toggle loop">∞</button>
+  <div class="playback-info">
+    <div class="now-label">PLAYING</div>
+    <div class="now-note" id="nowNote" aria-live="polite">—</div>
+    <div class="progress-wrap" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Playback progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+  <div class="playback-stats">
+    <div class="beat-dots" id="beatDots" aria-hidden="true"></div>
+    <div class="stat-pill" id="statPill">Ready</div>
+    <div class="stat-pill" id="cyclePill">Cycle 0/1</div>
+    <div class="stat-pill" id="tempoPill">80 BPM</div>
+    <div class="stat-pill" id="pitchPill">C (Sa)</div>
   </div>
 </div>
 
-<!-- SAVE MODAL -->
-<div class="modal-overlay" id="saveModal">
+<!-- ── SAVE MODAL ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
   <div class="modal">
-    <h3>💾 Save Alankar</h3>
-    <input type="text" id="saveNameInput" placeholder="Name your alankar…" maxlength="40" />
+    <h3 id="saveModalTitle">Save Alankar</h3>
+    <input type="text" id="saveNameInput" placeholder="Name your alankar…" maxlength="60" autocomplete="off" />
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeSaveModal()">Cancel</button>
-      <button class="btn btn-success" onclick="confirmSave()">Save</button>
+      <button class="btn btn-ghost"   id="cancelSaveBtn">Cancel</button>
+      <button class="btn btn-primary" id="confirmSaveBtn">Save</button>
     </div>
   </div>
 </div>
-<div class="toast" id="toast"></div>
 
+<!-- ── TOAST ──────────────────────────────────────────────────────────── -->
+<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+<!-- ── JS ENTRY POINT ─────────────────────────────────────────────────── -->
+<script type="module" src="/js/main.js"></script>
+
+<!-- Collapsible cards (lightweight inline script — no module needed) -->
 <script>
-// ═══════════════════════════════════════════════════════
-//  DATA
-// ═══════════════════════════════════════════════════════
-const SWARAS = [
-  { id:'S',  label:'S',  full:'Sa',         semit:0,  type:'pa-sa'  },
-  { id:'r',  label:'r',  full:'Komal Re',   semit:1,  type:'komal'  },
-  { id:'R',  label:'R',  full:'Shuddh Re',  semit:2,  type:'shuddh' },
-  { id:'g',  label:'g',  full:'Komal Ga',   semit:3,  type:'komal'  },
-  { id:'G',  label:'G',  full:'Shuddh Ga',  semit:4,  type:'shuddh' },
-  { id:'m',  label:'m',  full:'Shuddh Ma',  semit:5,  type:'shuddh' },
-  { id:'M',  label:'M',  full:'Teevra Ma',  semit:6,  type:'teevra' },
-  { id:'P',  label:'P',  full:'Pa',         semit:7,  type:'pa-sa'  },
-  { id:'d',  label:'d',  full:'Komal Dha',  semit:8,  type:'komal'  },
-  { id:'D',  label:'D',  full:'Shuddh Dha', semit:9,  type:'shuddh' },
-  { id:'n',  label:'n',  full:'Komal Ni',   semit:10, type:'komal'  },
-  { id:'N',  label:'N',  full:'Shuddh Ni',  semit:11, type:'shuddh' },
-  { id:"S'", label:"S'", full:'Taar Sa',    semit:12, type:'pa-sa'  },
-];
-
-// 10 Thaats of Hindustani music — 7 notes each (S' omitted; octave handled automatically)
-const THAATS = {
-  Bilawal: ['S','R','G','m','P','D','N'],
-  Khamaj:  ['S','R','G','m','P','D','n'],
-  Kafi:    ['S','R','g','m','P','D','n'],
-  Asavari: ['S','R','g','m','P','d','n'],
-  Bhairavi:['S','r','g','m','P','d','n'],
-  Bhairav: ['S','r','G','m','P','d','N'],
-  Kalyan:  ['S','R','G','M','P','D','N'],
-  Marwa:   ['S','r','G','M','P','D','N'],
-  Poorvi:  ['S','r','G','M','P','d','N'],
-  Todi:    ['S','r','g','M','P','d','N'],
-};
-
-const PRESETS = [
-  // ── BEGINNER ──────────────────────────────────────────
-  {name:'Sa Re Ga Ma',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1}],tags:['Beginner','Basic'],level:'beginner'},
-  {name:'Full Bilawal Saptak',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Scale'],level:'beginner'},
-  {name:'Sa Pa Sa Drone',notes:[{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'P',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Beginner','Drone'],level:'beginner'},
-  {name:'Sargam Basic (S R G m P)',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Beginner'],level:'beginner'},
-  {name:'Pa Dha Ni Sa',notes:[{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Upper'],level:'beginner'},
-  {name:'Bhairavi Scale',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Bhairavi'],level:'beginner'},
-  {name:'Kalyan Scale',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Kalyan'],level:'beginner'},
-  {name:'Bhairav Scale',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Bhairav'],level:'beginner'},
-  {name:'Sa Ma Sa',notes:[{id:'S',o:0,dur:1},{id:'m',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'m',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Beginner'],level:'beginner'},
-  {name:'Mandra to Madhya',notes:[{id:'S',o:-1,dur:1},{id:'P',o:-1,dur:1},{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Beginner','Octave'],level:'beginner'},
-  // ── INTERMEDIATE ────────────────────────────────────
-  {name:'Yaman Aroha',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Yaman'],level:'intermediate'},
-  {name:'3-Note Groups (SRG…)',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Groups'],level:'intermediate'},
-  {name:'Ascending 4-Note Groups',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Groups'],level:'intermediate'},
-  {name:'Skip Pattern (Jumps)',notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Jumps'],level:'intermediate'},
-  {name:'Mixed Durations',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:2},{id:'m',o:0,dur:0.5},{id:'m',o:0,dur:0.5}],tags:['Intermediate','Rhythm'],level:'intermediate'},
-  {name:'Kafi Aroha',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Kafi'],level:'intermediate'},
-  {name:'Asavari Aroha',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Asavari'],level:'intermediate'},
-  {name:'Marwa Aroha',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Intermediate','Marwa'],level:'intermediate'},
-  {name:'Pairs Forward',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate','Pairs'],level:'intermediate'},
-  {name:'Zig-Zag Sa to Pa',notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1}],tags:['Intermediate','Zigzag'],level:'intermediate'},
-  {name:'Taar Saptak Entry',notes:[{id:'P',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1},{id:'R',o:1,dur:1},{id:'G',o:1,dur:1},{id:'m',o:1,dur:1}],tags:['Intermediate','Taar'],level:'intermediate'},
-  {name:'Half-Note Slow Walk',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:2},{id:'G',o:0,dur:2},{id:'m',o:0,dur:2},{id:'P',o:0,dur:2}],tags:['Intermediate','Slow'],level:'intermediate'},
-  {name:'Eighth-Note Run',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Intermediate','Fast Run'],level:'intermediate'},
-  {name:'Alankaar Pattern 2',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Intermediate'],level:'intermediate'},
-  {name:'Alankaar Pattern 3',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Intermediate'],level:'intermediate'},
-  // ── ADVANCED ────────────────────────────────────────────
-  {name:'Gamak S R S G',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1}],tags:['Advanced','Gamak'],level:'advanced'},
-  {name:'Meend-style Glide',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:2},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:2}],tags:['Advanced','Meend'],level:'advanced'},
-  {name:'Taan Pattern 1',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5}],tags:['Advanced','Taan'],level:'advanced'},
-  {name:'Taan Pattern 2',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5}],tags:['Advanced','Taan'],level:'advanced'},
-  {name:'Khatka S r S R',notes:[{id:'S',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1}],tags:['Advanced','Khatka'],level:'advanced'},
-  {name:'Andolan (Komal Ga)',notes:[{id:'G',o:0,dur:2},{id:'g',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:2}],tags:['Advanced','Andolan'],level:'advanced'},
-  {name:'3-Group Descending',notes:[{id:"S'",o:0,dur:1},{id:'N',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:'D',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'P',o:0,dur:1},{id:'m',o:0,dur:1}],tags:['Advanced','Descending'],level:'advanced'},
-  {name:'Yaman Mukhra',notes:[{id:'N',o:-1,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Advanced','Yaman'],level:'advanced'},
-  {name:'Bhairav Vilambit',notes:[{id:'S',o:0,dur:2},{id:'r',o:0,dur:1},{id:'G',o:0,dur:2},{id:'m',o:0,dur:1},{id:'P',o:0,dur:2},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Bhairav','Slow'],level:'advanced'},
-  {name:'Crossover Pattern',notes:[{id:'S',o:0,dur:1},{id:'m',o:0,dur:1},{id:'R',o:0,dur:1},{id:'P',o:0,dur:1},{id:'G',o:0,dur:1},{id:'D',o:0,dur:1},{id:'m',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Crossover'],level:'advanced'},
-  {name:'Todi Aroha',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'g',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Todi'],level:'advanced'},
-  {name:'Double Octave Walk',notes:[{id:'S',o:-1,dur:1},{id:'R',o:-1,dur:1},{id:'G',o:-1,dur:1},{id:'m',o:-1,dur:1},{id:'P',o:-1,dur:1},{id:'D',o:-1,dur:1},{id:'N',o:-1,dur:1},{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Full Range'],level:'advanced'},
-  {name:'Mandra to Taar Run',notes:[{id:'N',o:-1,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Speed'],level:'advanced'},
-  {name:'Kafi Vilambit',notes:[{id:'S',o:0,dur:2},{id:'g',o:0,dur:1},{id:'m',o:0,dur:2},{id:'P',o:0,dur:1},{id:'D',o:0,dur:2},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Kafi','Slow'],level:'advanced'},
-  {name:'Bhairavi Avroha',notes:[{id:"S'",o:0,dur:1},{id:'n',o:0,dur:1},{id:'d',o:0,dur:1},{id:'P',o:0,dur:1},{id:'m',o:0,dur:1},{id:'g',o:0,dur:1},{id:'r',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Advanced','Bhairavi'],level:'advanced'},
-  {name:'Poorvi Aroha',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'P',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Poorvi'],level:'advanced'},
-  {name:'5-Note Leap',notes:[{id:'S',o:0,dur:1},{id:'P',o:0,dur:1},{id:'R',o:0,dur:1},{id:'D',o:0,dur:1},{id:'G',o:0,dur:1},{id:'N',o:0,dur:1},{id:'m',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Leaps'],level:'advanced'},
-  {name:'Mixed Speed Taan',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:1}],tags:['Advanced','Mixed Speed'],level:'advanced'},
-  {name:'Khatka on Pa',notes:[{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Khatka'],level:'advanced'},
-  {name:'Sapat Taan',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Speed Taan'],level:'advanced'},
-  {name:'Shruti Practice',notes:[{id:'r',o:0,dur:1},{id:'R',o:0,dur:1},{id:'g',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'M',o:0,dur:1},{id:'d',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:1},{id:'N',o:0,dur:1}],tags:['Advanced','Shruti'],level:'advanced'},
-  {name:'Raga Desh Alankar',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Desh'],level:'advanced'},
-
-  // ── CIRCULAR ALANKARS ────────────────────────────────
-  {name:'Full Circle (up → down)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Circular'],level:'advanced'},
-  {name:'Circular 2-Note Orbit',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Circular'],level:'advanced'},
-  {name:'Circular Spiral (S to S\u2019 to S)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Circular','Spiral'],level:'advanced'},
-  {name:'Orbit: 3-note up, 2-note back',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Circular'],level:'advanced'},
-  {name:'Loop: Sa–Re–Sa–Ga–Re–Ga',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5}],tags:['Advanced','Circular','Loop'],level:'advanced'},
-  {name:'Circular Taan (Sa–Ga–Re loop)',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5}],tags:['Advanced','Circular','Taan'],level:'advanced'},
-  {name:'Reverse Spiral (S\u2019 back to Sa)',notes:[{id:"S'",o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Circular','Descending'],level:'advanced'},
-  {name:'Two-Octave Circular',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'S',o:1,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Circular','2-Octave'],level:'advanced'},
-  {name:'Infinite Loop Gamak',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5}],tags:['Advanced','Circular','Gamak'],level:'advanced'},
-  {name:'Wave Pattern (up⋅down⋅up)',notes:[{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'R',o:1,dur:0.5}],tags:['Advanced','Circular','Wave'],level:'advanced'},
-
-  // ── PYRAMID ALANKARS ────────────────────────────────
-  {name:'Classic Pyramid (building up)',notes:[{id:'S',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Pyramid'],level:'advanced'},
-  {name:'Inverted Pyramid (shrinking)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Pyramid','Inverted'],level:'advanced'},
-  {name:'Diamond (up then down)',notes:[{id:'S',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Diamond'],level:'advanced'},
-  {name:'Staircase Pyramid',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Staircase'],level:'advanced'},
-  {name:'Expanding Triplets',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Pyramid','Expanding'],level:'advanced'},
-  {name:'Full Pyramid (S to S\u2019 and back)',notes:[{id:'S',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Full'],level:'advanced'},
-  {name:'Pentagon Pattern (5-note steps)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5}],tags:['Advanced','Pyramid','Pentagon'],level:'advanced'},
-  {name:'Ascending Wedge',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'P',o:0,dur:1}],tags:['Advanced','Pyramid','Wedge'],level:'advanced'},
-  {name:'Descending Wedge',notes:[{id:'P',o:0,dur:1},{id:'m',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Pyramid','Wedge','Descending'],level:'advanced'},
-  {name:'Double Pyramid',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Pyramid','Double'],level:'advanced'},
-
-  // ── EXPERT HARD ALANKARS ──────────────────────────
-  {name:'Compound Zigzag Taan',notes:[{id:'S',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Zigzag'],level:'advanced'},
-  {name:'Sa-Ni-Dha-Pa Ornament',notes:[{id:'S',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:1}],tags:['Advanced','Expert','Ornament'],level:'advanced'},
-  {name:'Matra 3+4+3+4 Rhythm',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:1},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1}],tags:['Advanced','Expert','Rhythm'],level:'advanced'},
-  {name:'Kaleidoscope (4-note cells)',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Circular'],level:'advanced'},
-  {name:'Tri-speed (half, quarter, eighth)',notes:[{id:'S',o:0,dur:2},{id:'R',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:2},{id:'D',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Rhythm'],level:'advanced'},
-  {name:'Raga Bhimpalasi Vilambit',notes:[{id:'S',o:0,dur:2},{id:'g',o:0,dur:1},{id:'m',o:0,dur:2},{id:'P',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:2},{id:'n',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Bhimpalasi'],level:'advanced'},
-  {name:'Yaman Vistar',notes:[{id:'N',o:-1,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'M',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:1},{id:'R',o:1,dur:0.5},{id:'G',o:1,dur:0.5},{id:'M',o:1,dur:1}],tags:['Advanced','Expert','Yaman'],level:'advanced'},
-  {name:'Spiral Cross Pattern',notes:[{id:'S',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Expert','Spiral'],level:'advanced'},
-  {name:'Marwa Taan',notes:[{id:'S',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'M',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'M',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'S',o:0,dur:0.5}],tags:['Advanced','Expert','Marwa'],level:'advanced'},
-  {name:'Mandra Taar Bridge',notes:[{id:'N',o:-1,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'R',o:1,dur:0.5},{id:'G',o:1,dur:0.5},{id:'m',o:1,dur:0.5},{id:'P',o:1,dur:0.5}],tags:['Advanced','Expert','3-Octave'],level:'advanced'},
-  {name:'Vakra (crooked) Taan',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Vakra'],level:'advanced'},
-  {name:'Chandrakauns Vistar',notes:[{id:'S',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:1},{id:'m',o:0,dur:0.5},{id:'g',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Expert','Chandrakauns'],level:'advanced'},
-  {name:'5+7 Split Rhythm Taan',notes:[{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:1}],tags:['Advanced','Expert','Rhythm'],level:'advanced'},
-  {name:'Interlocking 4ths',notes:[{id:'S',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Intervals'],level:'advanced'},
-  {name:'Speed Burst (16th notes)',notes:[{id:'S',o:0,dur:0.25},{id:'R',o:0,dur:0.25},{id:'G',o:0,dur:0.25},{id:'m',o:0,dur:0.25},{id:'P',o:0,dur:0.25},{id:'D',o:0,dur:0.25},{id:'N',o:0,dur:0.25},{id:"S'",o:0,dur:0.25},{id:'N',o:0,dur:0.25},{id:'D',o:0,dur:0.25},{id:'P',o:0,dur:0.25},{id:'m',o:0,dur:0.25},{id:'G',o:0,dur:0.25},{id:'R',o:0,dur:0.25},{id:'S',o:0,dur:0.5}],tags:['Advanced','Expert','Speed'],level:'advanced'},
-  {name:'Purvikalyani',notes:[{id:'S',o:0,dur:1},{id:'G',o:0,dur:1},{id:'M',o:0,dur:1},{id:'D',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'M',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'S',o:0,dur:1}],tags:['Advanced','Expert','Purvikalyani'],level:'advanced'},
-  {name:'Bageshri Alankar',notes:[{id:'S',o:0,dur:1},{id:'g',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:1},{id:'n',o:0,dur:0.5},{id:"S'",o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'n',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Expert','Bageshri'],level:'advanced'},
-  {name:'Lalit Swar Vistar',notes:[{id:'S',o:0,dur:2},{id:'r',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'M',o:0,dur:1},{id:'d',o:0,dur:1},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Lalit'],level:'advanced'},
-  {name:'Chromatic Run (all 12)',notes:[{id:'S',o:0,dur:0.5},{id:'r',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'g',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'M',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'d',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'n',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:0.5}],tags:['Advanced','Expert','Chromatic'],level:'advanced'},
-  {name:'Tilak Kamod Taan',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'N',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Expert','Tilak Kamod'],level:'advanced'},
-  {name:'Hamsadhvani Aroha (alt)',notes:[{id:'S',o:0,dur:1},{id:'R',o:0,dur:1},{id:'G',o:0,dur:1},{id:'P',o:0,dur:1},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Hamsadhvani'],level:'advanced'},
-  {name:'Hamsadhvani Avroha',notes:[{id:"S'",o:0,dur:1},{id:'N',o:0,dur:1},{id:'P',o:0,dur:1},{id:'G',o:0,dur:1},{id:'R',o:0,dur:1},{id:'S',o:0,dur:2}],tags:['Advanced','Expert','Hamsadhvani'],level:'advanced'},
-  {name:'Miyan ki Malhar Mukhra',notes:[{id:'N',o:-1,dur:0.5},{id:'S',o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'g',o:0,dur:0.5},{id:'m',o:0,dur:1},{id:'P',o:0,dur:0.5},{id:'D',o:0,dur:0.5},{id:'n',o:0,dur:0.5},{id:"S'",o:0,dur:1}],tags:['Advanced','Expert','Malhar'],level:'advanced'},
-  {name:'Gat-Tora (sitar phrase)',notes:[{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'P',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'P',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'G',o:0,dur:0.5},{id:'R',o:0,dur:1},{id:'S',o:0,dur:1}],tags:['Advanced','Expert','Gat'],level:'advanced'},
-  {name:'Rapid Alternation (8va)',notes:[{id:'S',o:0,dur:0.5},{id:"S'",o:0,dur:0.5},{id:'R',o:0,dur:0.5},{id:'R',o:1,dur:0.5},{id:'G',o:0,dur:0.5},{id:'G',o:1,dur:0.5},{id:'m',o:0,dur:0.5},{id:'m',o:1,dur:0.5},{id:'P',o:0,dur:0.5},{id:'P',o:1,dur:0.5}],tags:['Advanced','Expert','Octave Jump'],level:'advanced'},
-  {name:'Rag Shree (Komal Re, Shudh Ni)',notes:[{id:'S',o:0,dur:1},{id:'r',o:0,dur:1},{id:'G',o:0,dur:1},{id:'m',o:0,dur:1},{id:'D',o:0,dur:0.5},{id:'m',o:0,dur:0.5},{id:'N',o:0,dur:1},{id:"S'",o:0,dur:2}],tags:['Advanced','Expert','Shree'],level:'advanced'},
-];
-
-
-
-// ═══════════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════════
-let state = {
-  basePitch: 0,
-  startOctave: 4,
-  tempo: 80,
-  direction: 'up',
-  repeats: 1,
-  wave: 'sitar',
-  pattern: [],
-  nextOctOffset: 0,
-  nextDur: 1,
-  playing: false,
-  loop: false,
-  tanpuraOn: false,
-  tanpuraVol: 0.3,
-  savedAlankars: JSON.parse(localStorage.getItem('raagStudioAlankars2') || '[]'),
-  genInput: [],
-  generatedShifts: [],
-  genReps: 1,
-  genDirection: 'aaroh',
-  beatType: 4,
-  isGenPlay: false,
-  _shiftMap: null,
-};
-
-let audioCtx = null;
-let tanpuraNodes = [];
-let playQueue = [];
-let playIdx = 0;
-let playTimerId = null;
-let beatPhase = 0;
-
-// ═══════════════════════════════════════════════════════
-//  REAL AUDIO SAMPLES
-// ═══════════════════════════════════════════════════════
-const SAMPLE_BASE = 'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/';
-const SAMPLE_NOTES = {
-  harmonium:    ['A2','As2','B2','C2','Cs2','D2','Ds2','E2','F2','Fs2','G2','Gs2','A3','As3','B3','C3','Cs3','D3','Ds3','E3','F3','Fs3','G3','Gs3','A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','C5','Cs5','D5'],
-  flute:        ['A4','As4','B4','C4','Cs4','D4','Ds4','E4','F4','Fs4','G4','Gs4','A5','As5','B5','C5','Cs5','D5','Ds5','E5','F5','Fs5','G5','Gs5','A6','C6','E6'],
-  violin:       ['A3','A4','A5','A6','C4','C5','C6','Cs5','D4','D5','Ds5','E4','E5','F4','Fs4','G4','Gs4','G5'],
-  'guitar-nylon':['Fs2','Fs3','Fs4','Fs5','B1','B2','B3','B4','E2','E3','E4','E5'],
-};
-const audioBuffers = {};
-let samplesLoaded = false;
-let samplesLoading = false;
-
-function noteNameToMidi(n) {
-  const P={C:0,Cs:1,D:2,Ds:3,E:4,F:5,Fs:6,G:7,Gs:8,A:9,As:10,B:11};
-  const m=n.match(/^([A-G]s?)(\d)$/);
-  return m ? (parseInt(m[2])+1)*12+P[m[1]] : 60;
-}
-
-async function loadSamples() {
-  if (samplesLoading || samplesLoaded) return;
-  samplesLoading = true;
-  const insts = ['harmonium','flute','violin','guitar-nylon'];
-  let done=0, total=insts.reduce((a,i)=>a+SAMPLE_NOTES[i].length,0);
-  const el = ()=>document.getElementById('sampleStatus');
-  if (el()) el().textContent = 'Loading real samples 0%…';
-
-  await Promise.all(insts.flatMap(inst => SAMPLE_NOTES[inst].map(async note => {
-    try {
-      const res = await fetch(`${SAMPLE_BASE}${inst}/${note}.mp3`);
-      if (!res.ok) return;
-      const buf = await audioCtx.decodeAudioData(await res.arrayBuffer());
-      audioBuffers[`${inst}/${note}`] = { buffer: buf, midi: noteNameToMidi(note) };
-      done++;
-      const pct = Math.round(done/total*100);
-      if (el()) el().textContent = `Loading real samples ${pct}%…`;
-    } catch(e) {}
-  })));
-
-  samplesLoaded = true; samplesLoading = false;
-  if (el()) { el().textContent = '✓ Real samples loaded!'; el().classList.add('loaded'); }
-}
-
-function findNearest(inst, midi) {
-  const keys = Object.keys(audioBuffers).filter(k=>k.startsWith(inst+'/'));
-  if (!keys.length) return null;
-  return keys.reduce((best,k) => {
-    const d=Math.abs(audioBuffers[k].midi-midi);
-    return d<best.d ? {d,buf:audioBuffers[k]} : best;
-  }, {d:Infinity,buf:null}).buf;
-}
-
-function playSample(inst, freq, dur, t) {
-  const midi = Math.round(69+12*Math.log2(freq/440));
-  const s = findNearest(inst, midi);
-  if (!s) return;
-  const src = audioCtx.createBufferSource();
-  src.buffer = s.buffer;
-  src.playbackRate.value = Math.pow(2,(midi-s.midi)/12);
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0.001,t);
-  g.gain.linearRampToValueAtTime(0.55,t+0.03);
-  g.gain.setValueAtTime(0.5,t+dur*0.85);
-  g.gain.exponentialRampToValueAtTime(0.001,t+dur+0.08);
-  src.connect(g); g.connect(audioCtx.destination);
-  src.start(t); src.stop(t+dur+0.3);
-}
-
-// ═══════════════════════════════════════════════════════
-//  AUDIO ENGINE — Improved Synthesis
-// ═══════════════════════════════════════════════════════
-function ensureAudio() {
-  if (!audioCtx || audioCtx.state === 'closed') {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  // Begin sample loading on first audio context creation
-  if (!samplesLoaded && !samplesLoading) loadSamples();
-}
-
-function noteFreq(semit, octave) {
-  const midi = (octave + 1) * 12 + semit;
-  return 440 * Math.pow(2, (midi - 69) / 12);
-}
-
-function playNote(freq, dur, t) {
-  if (!audioCtx) return;
-  const w = state.wave;
-  if (samplesLoaded) {
-    if (w==='sitar')     { playSample('guitar-nylon',freq,dur,t); return; }
-    if (w==='harmonium') { playSample('harmonium',freq,dur,t);   return; }
-    if (w==='flute')     { playSample('flute',freq,dur,t);       return; }
-    if (w==='sarangi')   { playSample('violin',freq,dur,t);      return; }
-  }
-  switch (w) {
-    case 'sitar':    playSitar(freq,dur,t);    break;
-    case 'flute':    playFlute(freq,dur,t);    break;
-    case 'sarangi':  playSarangi(freq,dur,t);  break;
-    case 'harmonium':playHarmonium(freq,dur,t);break;
-    default:         playSitar(freq,dur,t);
-  }
-}
-
-// ── SITAR — Karplus-Strong plucked string ──────────────
-function playSitar(freq, dur, t) {
-  const sr = audioCtx.sampleRate;
-  const N = Math.max(2, Math.round(sr / freq));
-  const bufLen = Math.ceil(sr * Math.min(dur + 0.8, 4));
-  const buf = audioCtx.createBuffer(1, bufLen, sr);
-  const d = buf.getChannelData(0);
-
-  // Noise burst excitation
-  for (let i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
-
-  // Karplus-Strong averaging loop — damping tuned for sitar-like decay
-  const damp = 0.4985 + 0.0008 * Math.log2(freq / 80);
-  for (let i = N; i < bufLen; i++) {
-    d[i] = damp * (d[i - N] + d[i - Math.max(1, i - N + 1 < bufLen ? i - N + 1 : i - N)]);
-  }
-
-  const src = audioCtx.createBufferSource();
-  src.buffer = buf;
-
-  // Gentle EQ to boost mid harmonics (sitar brightness)
-  const eq = audioCtx.createBiquadFilter();
-  eq.type = 'peaking'; eq.frequency.value = freq * 3; eq.gain.value = 4; eq.Q.value = 2;
-
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0.55, t);
-  g.gain.exponentialRampToValueAtTime(0.001, t + Math.min(dur + 0.5, 3.5));
-
-  src.connect(eq); eq.connect(g); g.connect(audioCtx.destination);
-  src.start(t);
-}
-
-// ── BANSURI (FLUTE) — Sine + breath noise ──────────────
-function playFlute(freq, dur, t) {
-  const sr = audioCtx.sampleRate;
-
-  const osc = audioCtx.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.value = freq;
-
-  // Vibrato
-  const lfo = audioCtx.createOscillator();
-  const lfoG = audioCtx.createGain();
-  lfo.frequency.value = 5.2;
-  lfoG.gain.value = freq * 0.006;
-  lfo.connect(lfoG); lfoG.connect(osc.frequency);
-
-  // Breath noise
-  const noise = audioCtx.createBuffer(1, sr, sr);
-  const nd = noise.getChannelData(0);
-  for (let i = 0; i < sr; i++) nd[i] = Math.random() * 2 - 1;
-  const nSrc = audioCtx.createBufferSource();
-  nSrc.buffer = noise; nSrc.loop = true;
-  const nFilt = audioCtx.createBiquadFilter();
-  nFilt.type = 'bandpass'; nFilt.frequency.value = freq * 1.5; nFilt.Q.value = 8;
-  const nGain = audioCtx.createGain();
-  nGain.gain.value = 0.035;
-  nSrc.connect(nFilt); nFilt.connect(nGain);
-
-  // Harmonic overtone (gentle second)
-  const osc2 = audioCtx.createOscillator();
-  osc2.type = 'sine'; osc2.frequency.value = freq * 2;
-  const osc2G = audioCtx.createGain(); osc2G.gain.value = 0.06;
-  osc2.connect(osc2G);
-
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(0.3, t + 0.04);
-  g.gain.setValueAtTime(0.3, t + dur * 0.82);
-  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-
-  osc.connect(g); nGain.connect(g); osc2G.connect(g);
-  g.connect(audioCtx.destination);
-
-  [osc, osc2, lfo].forEach(o => { o.start(t); o.stop(t + dur + 0.1); });
-  nSrc.start(t); nSrc.stop(t + dur + 0.1);
-}
-
-// ── SARANGI — Bowed string with vibrato ───────────────
-function playSarangi(freq, dur, t) {
-  // Build rich bowed-string harmonic series (1/k amplitude)
-  const H = 14;
-  const real = new Float32Array(H + 1);
-  const imag = new Float32Array(H + 1);
-  real[0] = 0;
-  for (let k = 1; k <= H; k++) {
-    real[k] = (1 / k) * (k % 2 === 0 ? 0.65 : 1.0) * Math.exp(-0.08 * k);
-  }
-  const wave = audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
-
-  const osc = audioCtx.createOscillator();
-  osc.setPeriodicWave(wave);
-  osc.frequency.value = freq;
-
-  // Bow vibrato LFO (starts after attack)
-  const lfo = audioCtx.createOscillator();
-  const lfoG = audioCtx.createGain();
-  lfo.frequency.value = 5.8;
-  lfoG.gain.setValueAtTime(0, t);
-  lfoG.gain.linearRampToValueAtTime(freq * 0.009, t + dur * 0.35);
-  lfo.connect(lfoG); lfoG.connect(osc.frequency);
-
-  // Rosin/bow noise component
-  const noise = audioCtx.createBuffer(1, audioCtx.sampleRate, audioCtx.sampleRate);
-  const nd = noise.getChannelData(0);
-  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-  const nSrc = audioCtx.createBufferSource();
-  nSrc.buffer = noise; nSrc.loop = true;
-  const nFilt = audioCtx.createBiquadFilter();
-  nFilt.type = 'bandpass'; nFilt.frequency.value = freq * 4; nFilt.Q.value = 12;
-  const nGain = audioCtx.createGain(); nGain.gain.value = 0.018;
-  nSrc.connect(nFilt); nFilt.connect(nGain);
-
-  const body = audioCtx.createBiquadFilter();
-  body.type = 'peaking'; body.frequency.value = 400; body.gain.value = 5; body.Q.value = 1.2;
-
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0, t);
-  g.gain.linearRampToValueAtTime(0.28, t + 0.09);
-  g.gain.setValueAtTime(0.28, t + dur * 0.8);
-  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-
-  osc.connect(body); nGain.connect(body); body.connect(g);
-  g.connect(audioCtx.destination);
-
-  [osc, lfo].forEach(o => { o.start(t); o.stop(t + dur + 0.2); });
-  nSrc.start(t); nSrc.stop(t + dur + 0.2);
-}
-
-// ── HARMONIUM — Reed synthesis with PeriodicWave ──────
-function playHarmonium(freq, dur, t) {
-  // Free reed harmonic content: strong fundamental, rich even+odd harmonics
-  // Reed instruments have relatively uniform harmonic content
-  const H = 10;
-  const real = new Float32Array(H + 1);
-  const imag = new Float32Array(H + 1);
-  real[0] = 0;
-  // Harmonium reed profile: strong 1st & 2nd, gradually falling
-  const hProfile = [0, 1.0, 0.75, 0.5, 0.35, 0.22, 0.15, 0.09, 0.06, 0.04, 0.02];
-  for (let k = 1; k <= H; k++) real[k] = hProfile[k];
-  const wave = audioCtx.createPeriodicWave(real, imag, { disableNormalization: false });
-
-  const osc = audioCtx.createOscillator();
-  osc.setPeriodicWave(wave);
-  osc.frequency.value = freq;
-
-  // Slight second oscillator detuned (bellows chorusing)
-  const osc2 = audioCtx.createOscillator();
-  osc2.setPeriodicWave(wave);
-  osc2.frequency.value = freq * 1.0008;
-  const osc2G = audioCtx.createGain(); osc2G.gain.value = 0.25;
-  osc2.connect(osc2G);
-
-  // Low-pass: remove harshness above ~6kHz
-  const lp = audioCtx.createBiquadFilter();
-  lp.type = 'lowpass'; lp.frequency.value = Math.min(freq * 10, 6000); lp.Q.value = 0.6;
-
-  // Body resonance bump (box/cabinet sound)
-  const body = audioCtx.createBiquadFilter();
-  body.type = 'peaking'; body.frequency.value = 300; body.gain.value = 4; body.Q.value = 0.8;
-
-  const g = audioCtx.createGain();
-  // Bellows: slow attack, flat sustain, crisp release
-  g.gain.setValueAtTime(0.001, t);
-  g.gain.linearRampToValueAtTime(0.38, t + 0.07);
-  g.gain.setValueAtTime(0.36, t + dur * 0.88);
-  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-
-  osc.connect(lp); osc2G.connect(lp);
-  lp.connect(body); body.connect(g);
-  g.connect(audioCtx.destination);
-
-  [osc, osc2].forEach(o => { o.start(t); o.stop(t + dur + 0.1); });
-}
-
-// ═══════════════════════════════════════════════════════
-//  TANPURA DRONE — Authentic Jawari-style synthesis
-// ═══════════════════════════════════════════════════════
-let tanpuraCycle = null;
-
-function playTanpuraString(freq, vol, delay, now) {
-  const sr = audioCtx.sampleRate;
-  // Rich harmonic series (16 partials) for tanpura
-  const H = 16;
-  const real = new Float32Array(H+1); const imag = new Float32Array(H+1);
-  real[0] = 0;
-  // Natural harmonic amplitudes with jawari-like odd-harmonic boost
-  const amps = [0,1.0,0.42,0.62,0.18,0.38,0.10,0.28,0.08,0.20,0.06,0.15,0.05,0.12,0.04,0.09,0.03];
-  for (let k=1; k<=H; k++) real[k] = amps[k] * Math.exp(-0.04*k);
-  const wave = audioCtx.createPeriodicWave(real, imag, {disableNormalization:false});
-
-  // Main tone
-  const osc = audioCtx.createOscillator();
-  osc.setPeriodicWave(wave); osc.frequency.value = freq;
-
-  // Jawari buzz: slightly detuned second oscillator (+1.8 cents) for that characteristic shimmer
-  const osc2 = audioCtx.createOscillator();
-  osc2.setPeriodicWave(wave); osc2.frequency.value = freq * 1.001;
-
-  // Sub-harmonic body (octave below, quiet)
-  const osc3 = audioCtx.createOscillator();
-  osc3.frequency.value = freq * 0.5; osc3.type = 'sine';
-
-  // Slow amplitude modulation (tanpura vibration of string)
-  const tremLfo = audioCtx.createOscillator();
-  const tremGain = audioCtx.createGain();
-  tremLfo.frequency.value = 0.3 + Math.random()*0.15;
-  tremGain.gain.value = vol * 0.04;
-  tremLfo.connect(tremGain);
-
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0, now+delay);
-  g.gain.linearRampToValueAtTime(vol, now+delay+0.06);
-  g.gain.setValueAtTime(vol*0.9, now+delay+0.8);
-  g.gain.exponentialRampToValueAtTime(0.001, now+delay+2.6);
-
-  const g3 = audioCtx.createGain(); g3.gain.value = 0.12;
-
-  osc.connect(g); osc2.connect(g); osc3.connect(g3); g3.connect(g);
-  tremGain.connect(g);
-  g.connect(audioCtx.destination);
-
-  const t = now+delay;
-  [osc,osc2,osc3,tremLfo].forEach(o=>{ o.start(t); o.stop(t+3.0); });
-  tanpuraNodes.push({osc,g});
-}
-
-function startTanpura() {
-  stopTanpura();
-  ensureAudio();
-  const tuning = document.getElementById('tanpuraTuning').value;
-  const semits = tuning === 'sa-pa' ? [0,7,12,0] :
-                 tuning === 'sa-ma' ? [0,5,12,0] : [0,11,12,0];
-
-  const cycle = 2.2;
-  const baseOct = state.startOctave - 1;
-
-  function pluckCycle() {
-    if (!state.tanpuraOn) return;
-    const now = audioCtx.currentTime;
-    semits.forEach((s, i) => {
-      const oct = (s===0 && i===3) ? state.startOctave : baseOct;
-      const freq = noteFreq(state.basePitch + (s%12), s===12 ? state.startOctave : oct);
-      const delay = i * (cycle / semits.length);
-      const vol = state.tanpuraVol * 0.25 * (i===0||i===3 ? 1 : 0.75);
-      playTanpuraString(freq, vol, delay, now);
-    });
-    tanpuraCycle = setTimeout(pluckCycle, cycle * 1000);
-  }
-  pluckCycle();
-}
-
-function stopTanpura() {
-  clearTimeout(tanpuraCycle);
-  tanpuraNodes.forEach(n => { try { n.osc.stop(); } catch(e){} });
-  tanpuraNodes = [];
-}
-
-function toggleTanpura() {
-  state.tanpuraOn = document.getElementById('tanpuraToggle').checked;
-  if (state.tanpuraOn) { ensureAudio(); startTanpura(); }
-  else stopTanpura();
-}
-function restartTanpura() {
-  if (state.tanpuraOn) startTanpura();
-}
-function setTanpuraVol(v) { state.tanpuraVol = v / 100; }
-
-// ═══════════════════════════════════════════════════════
-//  SEQUENCE BUILDER
-// ═══════════════════════════════════════════════════════
-function buildSequence(pattern, direction, repeats) {
-  if (!pattern.length) return [];
-  let base = pattern.map(p => ({ ...p }));
-  let seq = [];
-  if (direction === 'up') {
-    for (let i = 0; i < repeats; i++) seq = seq.concat(base);
-  } else if (direction === 'down') {
-    const rev = [...base].reverse();
-    for (let i = 0; i < repeats; i++) seq = seq.concat(rev);
-  } else {
-    const rev = [...base].reverse();
-    for (let i = 0; i < repeats; i++) { seq = seq.concat(base); seq = seq.concat(rev); }
-  }
-  return seq;
-}
-
-// ═══════════════════════════════════════════════════════
-//  PLAYBACK ENGINE
-// ═══════════════════════════════════════════════════════
-function togglePlay() {
-  state.playing ? stopPlay() : startPlay();
-}
-
-function startPlay() {
-  if (!state.pattern.length) { showToast('Add notes to the pattern first!'); return; }
-  ensureAudio();
-  if (state.tanpuraOn) startTanpura();
-  state.playing = true;
-  playQueue = buildSequence(state.pattern, state.direction, state.repeats);
-  playIdx = 0; beatPhase = 0;
-  updatePlayBtn();
-  renderFlowNotes();
-  scheduleNext();
-}
-
-function startPlayCustom(queue, isGen = false, shiftMap = null) {
-  ensureAudio();
-  if (state.tanpuraOn) startTanpura();
-  state.playing = true;
-  state.isGenPlay = isGen;
-  state._shiftMap = shiftMap;
-  playQueue = queue;
-  playIdx = 0; beatPhase = 0;
-  updatePlayBtn(); scheduleNext();
-}
-
-function stopPlay() {
-  state.playing = false;
-  clearTimeout(playTimerId);
-  updatePlayBtn();
-  document.getElementById('nowNote').textContent = '—';
-  document.getElementById('progressBar').style.width = '0%';
-  document.getElementById('statPill').textContent = 'Ready';
-  document.getElementById('cyclePill').textContent = `Cycle 0/${state.repeats}`;
-  document.querySelectorAll('.pattern-note').forEach(el => el.classList.remove('playing-note'));
-  document.querySelectorAll('.swara-chip').forEach(el => el.classList.remove('active-note'));
-  document.querySelectorAll('.flow-note').forEach(el => el.classList.remove('active','played'));
-  document.querySelectorAll('.gen-row').forEach(el => el.classList.remove('gen-row-active'));
-  document.querySelectorAll('.gen-note-badge').forEach(el => el.classList.remove('playing-badge'));
-  const strip = document.getElementById('genPlaybackStrip');
-  if (strip) strip.classList.add('hidden');
-  const lbl = document.getElementById('genPlaybackLabel');
-  if (lbl) lbl.style.display = 'none';
-  state.isGenPlay = false; state._shiftMap = null;
-  updateBeatDots(-1);
-  vizTarget = Array(VIZ_BARS).fill(2);
-}
-
-function scheduleNext() {
-  if (!state.playing) return;
-
-  if (playIdx >= playQueue.length) {
-    if (state.loop) {
-      playIdx = 0;
-    } else {
-      stopPlay();
-      showToast('Alankar complete! 🎵');
-      return;
-    }
-  }
-
-  const note = playQueue[playIdx];
-  const sw = getSw(note.id);
-  if (!sw) { playIdx++; scheduleNext(); return; }
-
-  const freq = noteFreq(state.basePitch + sw.semit, state.startOctave + (note.o || 0));
-  const beatDur = 60 / state.tempo;
-  const noteDur = beatDur * (note.dur || 1);
-
-  playNote(freq, noteDur * 0.9, audioCtx.currentTime);
-
-  // ── UI Updates ──
-  const octMark = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
-  const durMark = note.dur === 2 ? ' ·' : note.dur === 0.5 ? '·' : '';
-  document.getElementById('nowNote').textContent = octMark + sw.label + durMark;
-
-  if (state.isGenPlay && state._shiftMap) {
-    const m = state._shiftMap[playIdx];
-    if (m) highlightGenStrip(m.shiftIdx, m.noteIdx, note);
-    // Also highlight swara chip
-    document.querySelectorAll('.swara-chip').forEach(el => el.classList.toggle('active-note', el.dataset.id === note.id));
-    document.getElementById('statPill').textContent = state._shiftMap[playIdx] ? `Shift ${state._shiftMap[playIdx].shiftIdx + 1}` : 'Playing…';
-  } else {
-    highlightPatternNote(playIdx % Math.max(state.pattern.length,1));
-    highlightFlowNote(playIdx);
-    document.getElementById('statPill').textContent = `Note ${(playIdx % Math.max(state.pattern.length,1)) + 1}/${state.pattern.length}`;
-  }
-
-  const pct = ((playIdx + 1) / playQueue.length) * 100;
-  document.getElementById('progressBar').style.width = pct + '%';
-  document.getElementById('cyclePill').textContent = `Note ${playIdx + 1}/${playQueue.length}`;
-
-  beatPhase = (beatPhase + 1) % state.beatType;
-  updateBeatDots(beatPhase);
-  vizTarget[Math.floor(Math.random() * VIZ_BARS)] = 18 + Math.random() * 26;
-
-  playIdx++;
-  playTimerId = setTimeout(scheduleNext, noteDur * 1000);
-}
-
-function highlightPatternNote(idx) {
-  document.querySelectorAll('.pattern-note').forEach((el, i) => el.classList.toggle('playing-note', i === idx));
-  const note = state.pattern[idx];
-  if (note) document.querySelectorAll('.swara-chip').forEach(el => el.classList.toggle('active-note', el.dataset.id === note.id));
-}
-function highlightFlowNote(idx) {
-  document.querySelectorAll('.flow-note').forEach((el, i) => {
-    el.classList.toggle('active', i === idx);
-    el.classList.toggle('played', i < idx);
-  });
-}
-function highlightGenStrip(shiftIdx, noteIdx, note) {
-  // Highlight active gen-row
-  document.querySelectorAll('.gen-row').forEach((el, i) => el.classList.toggle('gen-row-active', i === shiftIdx));
-  const rows = document.querySelectorAll('.gen-row');
-  if (rows[shiftIdx]) {
-    rows[shiftIdx].querySelectorAll('.gen-note-badge').forEach((b, i) => b.classList.toggle('playing-badge', i === noteIdx));
-  }
-  // Rebuild strip when shift changes
-  const strip = document.getElementById('genPlaybackStrip');
-  const lbl = document.getElementById('genPlaybackLabel');
-  if (noteIdx === 0 && state.generatedShifts[shiftIdx]) {
-    strip.innerHTML = '';
-    strip.classList.remove('hidden');
-    lbl.style.display = 'block';
-    lbl.textContent = `▶ Playing Shift ${shiftIdx + 1}`;
-    state.generatedShifts[shiftIdx].forEach((n, ni) => {
-      const s = getSw(n.id); if (!s) return;
-      const col = s.type==='komal'?'#f87171':s.type==='teevra'?'#fbbf24':s.type==='shuddh'?'#c084fc':'#34d399';
-      const el = document.createElement('span');
-      el.className = 'gps-note';
-      el.style.cssText = `color:${col};background:${col}22;border:1px solid ${col}55`;
-      el.textContent = (n.o===1?'⁺':n.o===-1?'₋':'') + s.label;
-      strip.appendChild(el);
-    });
-  }
-  strip.querySelectorAll('.gps-note').forEach((p, i) => {
-    p.classList.toggle('active', i === noteIdx);
-    p.classList.toggle('played', i < noteIdx);
-  });
-}
-function updatePlayBtn() {
-  const btn = document.getElementById('playBtn');
-  const btn2 = document.getElementById('buildPlayBtn');
-  btn.textContent = state.playing ? '⏹' : '▶';
-  btn.classList.toggle('playing', state.playing);
-  if (btn2) { btn2.textContent = state.playing ? '⏹ Stop' : '▶ Play'; btn2.className = state.playing ? 'btn btn-danger' : 'btn btn-primary'; }
-}
-
-// ═══════════════════════════════════════════════════════
-//  CONTROLS
-// ═══════════════════════════════════════════════════════
-function setTempo(v) {
-  state.tempo = Math.max(30, Math.min(500, parseInt(v)));
-  document.getElementById('tempoDisplay').textContent = state.tempo;
-  document.getElementById('tempoSlider').value = state.tempo;
-  document.getElementById('tempoPill').textContent = state.tempo + ' BPM';
-}
-function adjustTempo(d) { setTempo(Math.max(30, Math.min(500, state.tempo + d))); }
-function halfSpeed() { setTempo(Math.max(30, Math.round(state.tempo / 2))); showToast(`½×: ${state.tempo} BPM`); }
-function doubleSpeed() { setTempo(Math.min(500, Math.round(state.tempo * 2))); showToast(`2×: ${state.tempo} BPM`); }
-function setBeatType(n) {
-  state.beatType = n;
-  document.querySelectorAll('.beat-type-btn[data-beats]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.beats) === n));
-  initBeatDots();
-}
-function setGenDirection(d) {
-  state.genDirection = d;
-  document.querySelectorAll('.beat-type-btn[data-gdir]').forEach(b => b.classList.toggle('active', b.dataset.gdir === d));
-}
-function adjustRepeats(d) {
-  state.repeats = Math.max(1, Math.min(20, state.repeats + d));
-  document.getElementById('repeatVal').textContent = state.repeats;
-  document.getElementById('cyclePill').textContent = `Cycle 0/${state.repeats}`;
-  renderFlowNotes();
-}
-function setDirection(dir) {
-  state.direction = dir;
-  document.querySelectorAll('.dir-btn').forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
-  renderFlowNotes();
-}
-function setOctave(oct) {
-  state.startOctave = 4 + oct;
-  document.querySelectorAll('.oct-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.oct) === oct));
-  if (state.tanpuraOn) startTanpura();
-}
-function setBasePitch(idx) {
-  state.basePitch = idx;
-  document.querySelectorAll('.pitch-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.pitch) === idx));
-  document.getElementById('pitchPill').textContent = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][idx] + ' (Sa)';
-  if (state.tanpuraOn) startTanpura();
-}
-function setWave(w) {
-  state.wave = w;
-  document.querySelectorAll('.wave-btn').forEach(b => b.classList.toggle('active', b.dataset.wave === w));
-  // Trigger sample loading on first real-instrument selection
-  if (!samplesLoaded && !samplesLoading && w !== 'sitar') { ensureAudio(); }
-}
-function setNextOct(off) {
-  state.nextOctOffset = off;
-  document.querySelectorAll('#octOffBtns .seg-btn').forEach(b => b.classList.toggle('active-oct', parseFloat(b.dataset.off) === off));
-}
-function setNextDur(dur) {
-  state.nextDur = dur;
-  document.querySelectorAll('#durBtns .seg-btn').forEach(b => b.classList.toggle('active-dur', parseFloat(b.dataset.dur) === dur));
-}
-function toggleLoop() {
-  state.loop = !state.loop;
-  document.getElementById('loopBtn').classList.toggle('active', state.loop);
-  document.getElementById('loopPill').textContent = state.loop ? '∞ Loop ON' : '∞ Loop OFF';
-  document.getElementById('loopPill').classList.toggle('active', state.loop);
-}
-
-// ═══════════════════════════════════════════════════════
-//  PATTERN
-// ═══════════════════════════════════════════════════════
-function getSw(id) { return SWARAS.find(s => s.id === id); }
-
-function addNote(swaraId) {
-  state.pattern.push({ id: swaraId, o: state.nextOctOffset, dur: state.nextDur });
-  renderPattern(); renderFlowNotes();
-}
-function removeNote(idx) { state.pattern.splice(idx, 1); renderPattern(); renderFlowNotes(); }
-function undoLast() { if (state.pattern.length) { state.pattern.pop(); renderPattern(); renderFlowNotes(); } }
-function clearPattern() { if (state.playing) stopPlay(); state.pattern = []; renderPattern(); renderFlowNotes(); }
-function reversePattern() { state.pattern.reverse(); renderPattern(); renderFlowNotes(); }
-
-function renderPattern() {
-  const track = document.getElementById('patternTrack');
-  track.classList.toggle('empty', !state.pattern.length);
-  track.innerHTML = '';
-  state.pattern.forEach((note, i) => {
-    const sw = getSw(note.id);
-    if (!sw) return;
-    const durClass = note.dur === 2 ? 'dur-half' : note.dur === 0.5 ? 'dur-eighth' : '';
-    const durBadge = note.dur === 2 ? '½' : note.dur === 0.5 ? '2×' : '';
-    const octBadge = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
-    const el = document.createElement('div');
-    el.className = `pattern-note ${sw.type} ${durClass}`;
-    el.title = `${sw.full}${note.dur === 2 ? ' (Half note)' : note.dur === 0.5 ? ' (Eighth note)' : ''}`;
-    el.innerHTML = `
-      <span class="oct-badge">${octBadge}</span>
-      ${sw.label}
-      <span class="dur-badge">${durBadge}</span>
-      <span class="del-x" onclick="removeNote(${i});event.stopPropagation()">✕</span>`;
-    el.onclick = () => { ensureAudio(); playNote(noteFreq(state.basePitch + sw.semit, state.startOctave + (note.o || 0)), 0.4, audioCtx.currentTime); };
-    track.appendChild(el);
-  });
-}
-
-function renderFlowNotes() {
-  const seq = buildSequence(state.pattern, state.direction, state.repeats);
-  const c = document.getElementById('flowNotes');
-  c.innerHTML = '';
-  seq.forEach((note, i) => {
-    const sw = getSw(note.id);
-    if (!sw) return;
-    const el = document.createElement('span');
-    el.className = 'flow-note';
-    el.textContent = (note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '') + sw.label;
-    c.appendChild(el);
-    if (i < seq.length - 1) { const sep = document.createElement('span'); sep.className = 'flow-sep'; sep.textContent = '·'; c.appendChild(sep); }
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-//  SWARA PALETTE
-// ═══════════════════════════════════════════════════════
-function renderSwaraPalette() {
-  const c = document.getElementById('swaraPalette');
-  c.innerHTML = '';
-  SWARAS.forEach(sw => {
-    const el = document.createElement('div');
-    el.className = `swara-chip ${sw.type}`;
-    el.dataset.id = sw.id;
-    el.innerHTML = `<span class="sn">${sw.label}</span><span class="ss">${sw.full}</span>`;
-    el.onclick = () => {
-      addNote(sw.id);
-      ensureAudio();
-      playNote(noteFreq(state.basePitch + sw.semit, state.startOctave + state.nextOctOffset), 0.35, audioCtx.currentTime);
-    };
-    c.appendChild(el);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-//  PITCH GRID
-// ═══════════════════════════════════════════════════════
-function renderPitchGrid() {
-  const labels = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  const grid = document.getElementById('pitchGrid');
-  grid.innerHTML = '';
-  labels.forEach((l, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'pitch-btn' + (i === 0 ? ' active' : '');
-    btn.dataset.pitch = i; btn.textContent = l;
-    btn.onclick = () => setBasePitch(i);
-    grid.appendChild(btn);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-//  PRESETS
-// ═══════════════════════════════════════════════════════
-let activeFilter = 'beginner';
-
-function renderPresetsFilter() {
-  const f = document.getElementById('presetsFilter');
-  if (!f) return;
-  f.innerHTML = '';
-  ['beginner','intermediate','advanced'].forEach(lv => {
-    const btn = document.createElement('button');
-    btn.className = 'filter-btn' + (lv === activeFilter ? ' active' : '');
-    btn.textContent = lv[0].toUpperCase() + lv.slice(1);
-    btn.onclick = () => {
-      activeFilter = lv;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.preset-card').forEach((card, i) => {
-        const lvl = PRESETS[i]?.level || 'beginner';
-        card.classList.toggle('hidden', lvl !== activeFilter);
-      });
-    };
-    f.appendChild(btn);
-  });
-}
-
-function renderPresets() {
-  const grid = document.getElementById('presetsGrid');
-  grid.innerHTML = '';
-  PRESETS.forEach((p, idx) => {
-    const card = document.createElement('div');
-    card.className = 'preset-card';
-    const noteStr = p.notes.map(n => (n.o===1?'\u207a':n.o===-1?'\u208b':'') + n.id).join('\u2013');
-    const tagHtml = p.tags.map(t => {
-      const tc = t.toLowerCase();
-      const cls = tc==='beginner'?'tag beginner':tc==='intermediate'?'tag intermediate':tc==='advanced'?'tag advanced':'tag';
-      return `<span class="${cls}">${t}</span>`;
-    }).join('');
-    card.innerHTML = `<div class="preset-name">${p.name}</div><div class="preset-notes">${noteStr}</div><div class="preset-tags">${tagHtml}</div>`;
-    card.onclick = () => {
-      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      if (state.playing) stopPlay();
-      state.pattern = p.notes.map(n => ({ ...n }));
-      renderPattern(); renderFlowNotes();
-      showToast(`Loaded: ${p.name}`);
-    };
-    // Hide cards not matching default filter
-    if (p.level !== activeFilter) card.classList.add('hidden');
-    grid.appendChild(card);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-//  PATTERN GENERATOR — Thaat-based shift generator
-// ═══════════════════════════════════════════════════════
-function onThaatChange() {
-  renderThaatStrip();
-  state.genInput = [];
-  renderGenInput();
-  document.getElementById('genResults').innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Select a thaat, build an input pattern, then click ⚡ Generate</div>';
-}
-
-function renderThaatStrip() {
-  const thaatName = document.getElementById('thaatSelect').value;
-  const thaatNotes = THAATS[thaatName];
-  const strip = document.getElementById('thaatNotesStrip');
-  strip.innerHTML = '';
-  thaatNotes.forEach((noteId, idx) => {
-    const sw = getSw(noteId);
-    if (!sw) return;
-    const chip = document.createElement('div');
-    chip.className = `thaat-note-chip ${sw.type}`;
-    chip.textContent = sw.label;
-    chip.title = sw.full;
-    chip.style.background = sw.type === 'komal' ? 'rgba(248,113,113,0.15)' :
-                             sw.type === 'teevra' ? 'rgba(251,191,36,0.15)' :
-                             sw.type === 'shuddh' ? 'rgba(192,132,252,0.15)' :
-                             'rgba(52,211,153,0.15)';
-    chip.style.color = sw.type === 'komal' ? '#f87171' :
-                       sw.type === 'teevra' ? '#fbbf24' :
-                       sw.type === 'shuddh' ? '#c084fc' : '#34d399';
-    chip.style.borderColor = chip.style.color.replace(')',',0.4)').replace('rgb','rgba');
-    chip.onclick = () => {
-      state.genInput.push({ id: noteId, thaatIdx: idx });
-      renderGenInput();
-      ensureAudio();
-      playNote(noteFreq(state.basePitch + sw.semit, state.startOctave), 0.3, audioCtx.currentTime);
-    };
-    strip.appendChild(chip);
-  });
-}
-
-function renderGenInput() {
-  const track = document.getElementById('genInputTrack');
-  track.classList.toggle('empty', !state.genInput.length);
-  track.innerHTML = '';
-  state.genInput.forEach((item, i) => {
-    const sw = getSw(item.id);
-    if (!sw) return;
-    const pill = document.createElement('div');
-    pill.className = `gen-note-pill ${sw.type}`;
-    pill.style.background = sw.type === 'komal' ? 'rgba(248,113,113,0.2)' :
-                             sw.type === 'teevra' ? 'rgba(251,191,36,0.2)' :
-                             sw.type === 'shuddh' ? 'rgba(192,132,252,0.2)' :
-                             'rgba(52,211,153,0.2)';
-    pill.style.color = sw.type === 'komal' ? '#f87171' :
-                       sw.type === 'teevra' ? '#fbbf24' :
-                       sw.type === 'shuddh' ? '#c084fc' : '#34d399';
-    pill.innerHTML = `${sw.label}<span class="del-g" onclick="removeGenNote(${i});event.stopPropagation()">✕</span>`;
-    track.appendChild(pill);
-  });
-}
-
-function removeGenNote(idx) { state.genInput.splice(idx, 1); renderGenInput(); }
-function clearGenInput() { state.genInput = []; renderGenInput(); }
-
-function adjustGenReps(d) {
-  state.genReps = Math.max(1, Math.min(10, state.genReps + d));
-  document.getElementById('genRepsVal').textContent = state.genReps;
-}
-
-function generateShifts() {
-  if (!state.genInput.length) { showToast('Add notes to the input pattern first!'); return; }
-
-  const thaatName = document.getElementById('thaatSelect').value;
-  const thaat = THAATS[thaatName];
-  const tLen = thaat.length; // 7 notes per thaat (S' removed — handled via octave wrap)
-
-  const startPos = state.genInput[0].thaatIdx;
-  const intervals = state.genInput.map(item => item.thaatIdx - startPos);
-
-  state.generatedShifts = [];
-
-  // Generate all 7 shifts (one per thaat degree)
-  for (let shift = 0; shift < tLen; shift++) {
-    const notes = intervals.map(interval => {
-      const thaatPos = shift + interval;
-      const noteIdx = ((thaatPos % tLen) + tLen) % tLen;
-      const octaveOff = thaatPos >= 0 ? Math.floor(thaatPos / tLen) : -Math.ceil(-thaatPos / tLen);
-      return { id: thaat[noteIdx], o: octaveOff, dur: 1 };
-    });
-    state.generatedShifts.push(notes);
-  }
-
-  renderGenResults();
-  showToast(`Generated ${state.generatedShifts.length} shifts for ${thaatName}!`);
-}
-
-function renderGenResults() {
-  const c = document.getElementById('genResults');
-  c.innerHTML = '';
-  if (!state.generatedShifts.length) return;
-
-  state.generatedShifts.forEach((shift, idx) => {
-    const row = document.createElement('div');
-    row.className = 'gen-row';
-    row.innerHTML = `<div class="gen-row-num">${idx + 1}</div><div class="gen-row-notes" id="gnotes${idx}"></div><div class="gen-row-actions"><button class="gen-btn gen-btn-load" onclick="loadGenShift(${idx})">Load</button><button class="gen-btn gen-btn-play" onclick="playGenShift(${idx})">▶</button></div>`;
-    c.appendChild(row);
-
-    const notesEl = row.querySelector(`#gnotes${idx}`);
-    shift.forEach((note, ni) => {
-      const sw = getSw(note.id);
-      if (!sw) return;
-      const badge = document.createElement('span');
-      badge.className = `gen-note-badge ${sw.type}`;
-      badge.style.background = sw.type === 'komal' ? 'rgba(248,113,113,0.15)' :
-                               sw.type === 'teevra' ? 'rgba(251,191,36,0.15)' :
-                               sw.type === 'shuddh' ? 'rgba(192,132,252,0.15)' :
-                               'rgba(52,211,153,0.15)';
-      badge.style.color = sw.type === 'komal' ? '#f87171' :
-                          sw.type === 'teevra' ? '#fbbf24' :
-                          sw.type === 'shuddh' ? '#c084fc' : '#34d399';
-      badge.textContent = (note.o === 1 ? '⁺' : note.o === -1 ? '₋' : '') + sw.label;
-      notesEl.appendChild(badge);
+  document.querySelectorAll('.card-collapse-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.card-collapsible')?.classList.toggle('collapsed');
     });
   });
-}
-
-function loadGenShift(idx) {
-  if (state.playing) stopPlay();
-  state.pattern = state.generatedShifts[idx].map(n => ({ ...n }));
-  renderPattern(); renderFlowNotes();
-  showToast(`Loaded Shift ${idx + 1}`);
-  document.querySelector('.pattern-track')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-// Build a playback sequence for a single shift honouring aaroh/avroh/both direction
-function buildShiftSeq(shift, si, shiftMap) {
-  const seq = [];
-  const dir = state.genDirection;
-  for (let r = 0; r < state.genReps; r++) {
-    if (dir === 'aaroh' || dir === 'both') {
-      shift.forEach((note, ni) => { seq.push(note); shiftMap.push({ shiftIdx: si, noteIdx: ni }); });
-    }
-    if (dir === 'avroh' || dir === 'both') {
-      // Avroh: reversed shift, note indices go from high end down
-      const rev = [...shift].reverse();
-      rev.forEach((note, ni) => { seq.push(note); shiftMap.push({ shiftIdx: si, noteIdx: shift.length - 1 - ni }); });
-    }
-  }
-  return seq;
-}
-
-function playGenShift(idx) {
-  if (state.playing) stopPlay();
-  const shift = state.generatedShifts[idx];
-  const shiftMap = []; const seq = buildShiftSeq(shift, idx, shiftMap);
-  ensureAudio();
-  startPlayCustom(seq, true, shiftMap);
-}
-
-function playAllShifts() {
-  if (!state.generatedShifts.length) { showToast('Generate shifts first!'); return; }
-  if (state.playing) stopPlay();
-  const fSeq = []; const fMap = [];
-  state.generatedShifts.forEach((shift, si) => { buildShiftSeq(shift, si, fMap).forEach(n => fSeq.push(n)); });
-  ensureAudio();
-  startPlayCustom(fSeq, true, fMap);
-  showToast(`Playing all ${state.generatedShifts.length} shifts (${state.genDirection})!`);
-}
-
-// ═══════════════════════════════════════════════════════
-//  SAVE / LOAD
-// ═══════════════════════════════════════════════════════
-function openSaveModal() {
-  if (!state.pattern.length) { showToast('Pattern is empty!'); return; }
-  document.getElementById('saveModal').classList.add('open');
-  document.getElementById('saveNameInput').value = '';
-  setTimeout(() => document.getElementById('saveNameInput').focus(), 50);
-}
-function closeSaveModal() { document.getElementById('saveModal').classList.remove('open'); }
-function confirmSave() {
-  const name = document.getElementById('saveNameInput').value.trim() || 'My Alankar';
-  state.savedAlankars.push({ name, pattern: [...state.pattern], tempo: state.tempo, direction: state.direction, repeats: state.repeats });
-  localStorage.setItem('raagStudioAlankars2', JSON.stringify(state.savedAlankars));
-  closeSaveModal(); renderSaved(); showToast(`Saved: ${name}`);
-}
-function deleteSaved(idx) {
-  state.savedAlankars.splice(idx, 1);
-  localStorage.setItem('raagStudioAlankars2', JSON.stringify(state.savedAlankars));
-  renderSaved();
-}
-function loadSaved(idx) {
-  const a = state.savedAlankars[idx];
-  if (!a) return;
-  if (state.playing) stopPlay();
-  state.pattern = [...a.pattern];
-  if (a.tempo) setTempo(a.tempo);
-  if (a.direction) setDirection(a.direction);
-  if (a.repeats) { state.repeats = a.repeats; document.getElementById('repeatVal').textContent = state.repeats; }
-  renderPattern(); renderFlowNotes(); showToast(`Loaded: ${a.name}`);
-}
-function renderSaved() {
-  const list = document.getElementById('savedList');
-  if (!state.savedAlankars.length) { list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px">No saved alankars yet</div>'; return; }
-  list.innerHTML = '';
-  state.savedAlankars.forEach((a, i) => {
-    const item = document.createElement('div');
-    item.className = 'saved-item';
-    item.innerHTML = `<div style="flex:1"><div class="saved-name">${a.name}</div><div class="saved-notes">${a.pattern.map(n=>n.id).join(' ')}</div></div><button class="icon-btn play" onclick="loadSaved(${i});event.stopPropagation()" title="Load">▶</button><button class="icon-btn" onclick="deleteSaved(${i});event.stopPropagation()" title="Delete">✕</button>`;
-    item.onclick = () => loadSaved(i);
-    list.appendChild(item);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-//  BEAT DOTS & VIZ
-// ═══════════════════════════════════════════════════════
-function initBeatDots() {
-  const c = document.getElementById('beatDots');
-  c.innerHTML = '';
-  for (let i = 0; i < state.beatType; i++) {
-    const d = document.createElement('div'); d.className = 'beat-dot'; d.id = `bd${i}`; c.appendChild(d);
-  }
-}
-function updateBeatDots(active) {
-  for (let i = 0; i < state.beatType; i++) document.getElementById(`bd${i}`)?.classList.toggle('on', i === active);
-}
-
-const VIZ_BARS = 16;
-let vizTarget = Array(VIZ_BARS).fill(2);
-let vizCurrent = Array(VIZ_BARS).fill(2);
-
-function initViz() {
-  const c = document.getElementById('vizBars');
-  c.innerHTML = '';
-  for (let i = 0; i < VIZ_BARS; i++) { const b = document.createElement('div'); b.className = 'viz-bar'; b.id = `vb${i}`; c.appendChild(b); }
-  animViz();
-}
-function animViz() {
-  for (let i = 0; i < VIZ_BARS; i++) {
-    vizCurrent[i] += (vizTarget[i] - vizCurrent[i]) * 0.18;
-    const el = document.getElementById(`vb${i}`);
-    if (el) {
-      el.style.height = vizCurrent[i] + 'px';
-      el.style.background = state.playing ? `hsl(${265 + i * 7}, 75%, 65%)` : 'rgba(192,132,252,0.18)';
-    }
-    vizTarget[i] = Math.max(2, vizTarget[i] * 0.83 + (state.playing ? Math.random() * 2 : 0));
-  }
-  requestAnimationFrame(animViz);
-}
-
-// ═══════════════════════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════════════════════
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2400);
-}
-
-// ═══════════════════════════════════════════════════════
-//  KEYBOARD SHORTCUTS
-// ═══════════════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
-  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-  if (e.code === 'Backspace') { e.preventDefault(); undoLast(); }
-  if (e.code === 'Delete') { e.preventDefault(); clearPattern(); }
-  if (e.code === 'ArrowUp') { e.preventDefault(); adjustTempo(5); }
-  if (e.code === 'ArrowDown') { e.preventDefault(); adjustTempo(-5); }
-  if (e.code === 'KeyL') toggleLoop();
-  if (e.code === 'BracketLeft') { e.preventDefault(); halfSpeed(); }
-  if (e.code === 'BracketRight') { e.preventDefault(); doubleSpeed(); }
-});
-
-// Modal
-document.getElementById('saveNameInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') confirmSave();
-  if (e.key === 'Escape') closeSaveModal();
-});
-document.getElementById('saveModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeSaveModal(); });
-
-// ═══════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════
-function init() {
-  renderPitchGrid();
-  renderSwaraPalette();
-  renderPresetsFilter();
-  renderPresets();
-  renderPattern();
-  renderFlowNotes();
-  renderSaved();
-  renderThaatStrip();
-  initBeatDots();
-  initViz();
-  setTempo(80);
-  // Pre-load audio context and start sample loading
-  setTimeout(() => { ensureAudio(); }, 800);
-}
-
-document.addEventListener('DOMContentLoaded', init);
 </script>
+
 </body>
 </html>

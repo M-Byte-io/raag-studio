@@ -1,0 +1,48 @@
+/* ═══════════════════════════════════════════════════
+   RAAG STUDIO — Design Tokens
+   All CSS custom properties live here.
+═══════════════════════════════════════════════════ */
+:root {
+  /* Backgrounds */
+  --bg:       #0a0a12;
+  --surface:  #12121e;
+  --surface2: #1a1a2e;
+  --surface3: #22223a;
+
+  /* Borders */
+  --border:   rgba(255, 255, 255, 0.08);
+
+  /* Accent palette */
+  --accent:   #c084fc;
+  --accent2:  #818cf8;
+  --accent3:  #34d399;
+  --gold:     #fbbf24;
+  --danger:   #f87171;
+  --glow:     rgba(192, 132, 252, 0.3);
+
+  /* Typography */
+  --text:     #f1f0ff;
+  --text2:    #a29fc8;
+  --text3:    #6b6890;
+
+  /* Shape */
+  --radius:    16px;
+  --radius-sm: 10px;
+
+  /* Swara type colours (used by JS via CSS variables) */
+  --col-komal-bg:   rgba(248, 113, 113, 0.15);
+  --col-komal-fg:   #f87171;
+  --col-komal-bd:   rgba(248, 113, 113, 0.4);
+
+  --col-teevra-bg:  rgba(251, 191, 36, 0.15);
+  --col-teevra-fg:  #fbbf24;
+  --col-teevra-bd:  rgba(251, 191, 36, 0.4);
+
+  --col-shuddh-bg:  rgba(192, 132, 252, 0.15);
+  --col-shuddh-fg:  #c084fc;
+  --col-shuddh-bd:  rgba(192, 132, 252, 0.4);
+
+  --col-pa-sa-bg:   rgba(52, 211, 153, 0.15);
+  --col-pa-sa-fg:   #34d399;
+  --col-pa-sa-bd:   rgba(52, 211, 153, 0.4);
+}
