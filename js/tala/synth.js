@@ -1,109 +1,105 @@
 /**
- * TABLA STROKE SYNTHESISER — v2, High-Fidelity Web Audio Model
+ * TABLA STROKE SYNTHESISER — v3 "Warm & Blended"
  *
- * Acoustic model based on tabla membrane physics:
+ * Design philosophy:
+ *   - Remove ALL harsh high-frequency noise. Tabla is a warm, resonant drum.
+ *   - Joint bols (Dha, Dhin) = bayan provides bass foundation, dayan sits
+ *     ON TOP, slightly delayed (8ms) — they glue into one stroke.
+ *   - Dayan: mostly pure sine fundamental + 1 harmonic. Soft attack.
+ *   - Bayan: deep sub-bass sine with smooth pitch drop. No harsh harmonics.
+ *   - Skin "thwack": gentle low-mid bandpass noise only, very short.
+ *   - Master output runs through a warm lowpass (5kHz) to cut any edge.
  *
- * DAYAN (right/treble):
- *   - Syahi patch creates inharmonic partials (characteristic "singing" tone)
- *   - Strike produces sharp transient + upward pitch glide (finger pressure)
- *   - Multiple oscillators at inharmonic ratios: 1, 1.51, 2.0, 2.74, 3.46
- *   - Bandpass resonator shapes the body
- *   - Long decay on open strokes (Na, Tin), short on muted (Ta, Te)
- *
- * BAYAN (left/bass):
- *   - Larger membrane, lower fundamental (~100–180 Hz)
- *   - Wrist-press pitch bend: quick downward sweep on Ge/Ka
- *   - On Dha/Dhin: heavy bass thud + open ring
- *   - Thump noise + sub-bass oscillator + mid-resonance
- *
- * External API (unchanged from v1):
+ * External API (unchanged):
  *   playBol(ctx, bolName, audioTime, { volume, muteBayan, muteDayan, humanize, isSam })
  *   setMasterVolume(ctx, v)
  */
 
-// ── Bol catalogue ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// BOL TABLE
+// b  → bayan params | dy → dayan params | gap → dayan-after-bayan delay (sec)
+// Types: bayan: 'open'|'ge'|'ka'   dayan: 'na'|'tin'|'ta'|'te'
+// ─────────────────────────────────────────────────────────────────────────────
 const BOL_MAP = {
-  // Both drums
-  'Dha':   { b: { g:1.00, d:1.0, t:'open' }, dy: { g:0.90, d:1.0, t:'na'  } },
-  'Dhin':  { b: { g:0.90, d:1.0, t:'open' }, dy: { g:0.85, d:1.0, t:'tin' } },
-  'Dhage': { b: { g:0.88, d:1.0, t:'open' }, dy: { g:0.80, d:1.0, t:'na'  } },
-  'DhaTe': { b: { g:0.88, d:1.0, t:'open' }, dy: { g:0.75, d:1.0, t:'te'  } },
-  'DhiN':  { b: { g:0.82, d:1.0, t:'open' }, dy: { g:0.80, d:1.0, t:'tin' } },
-  'DhiT':  { b: { g:0.80, d:0.9, t:'open' }, dy: { g:0.75, d:1.0, t:'te'  } },
+  // ── Joint (bayan + dayan) ──────────────────────────────────────────────
+  'Dha':       { b:{ g:0.82, t:'open' }, dy:{ g:0.88, t:'na'  }, gap:0.008 },
+  'Dhin':      { b:{ g:0.78, t:'open' }, dy:{ g:0.85, t:'tin' }, gap:0.008 },
+  'Dhage':     { b:{ g:0.76, t:'open' }, dy:{ g:0.80, t:'na'  }, gap:0.009 },
+  'DhaTe':     { b:{ g:0.76, t:'open' }, dy:{ g:0.76, t:'te'  }, gap:0.008 },
+  'DhiN':      { b:{ g:0.75, t:'open' }, dy:{ g:0.82, t:'tin' }, gap:0.008 },
+  'DhiT':      { b:{ g:0.74, t:'open' }, dy:{ g:0.76, t:'te'  }, gap:0.007 },
 
-  // Dayan open (resonant ring)
-  'Na':    { b: null,                         dy: { g:0.82, d:1.0, t:'na'  } },
-  'Dhi':   { b: null,                         dy: { g:0.75, d:1.0, t:'na'  } },
-  'Ti':    { b: null,                         dy: { g:0.65, d:1.0, t:'tin' } },
-  'Tin':   { b: null,                         dy: { g:0.85, d:1.0, t:'tin' } },
-  'Tun':   { b: null,                         dy: { g:0.72, d:0.9, t:'na'  } },
-  'Din':   { b: null,                         dy: { g:0.70, d:1.0, t:'na'  } },
+  // ── Dayan only — open resonant ─────────────────────────────────────────
+  'Na':        { b:null,                 dy:{ g:0.86, t:'na'  } },
+  'Dhi':       { b:null,                 dy:{ g:0.78, t:'na'  } },
+  'Ti':        { b:null,                 dy:{ g:0.68, t:'tin' } },
+  'Tin':       { b:null,                 dy:{ g:0.88, t:'tin' } },
+  'Tun':       { b:null,                 dy:{ g:0.74, t:'na'  } },
+  'Din':       { b:null,                 dy:{ g:0.72, t:'na'  } },
 
-  // Dayan muted (deadened)
-  'Ta':    { b: null,                         dy: { g:0.72, d:1.0, t:'ta'  } },
-  'Te':    { b: null,                         dy: { g:0.62, d:1.0, t:'te'  } },
+  // ── Dayan only — muted ─────────────────────────────────────────────────
+  'Ta':        { b:null,                 dy:{ g:0.74, t:'ta'  } },
+  'Te':        { b:null,                 dy:{ g:0.64, t:'te'  } },
 
-  // Bayan only
-  'Ka':    { b: { g:0.65, d:1.0, t:'ka'  }, dy: null },
-  'Ki':    { b: { g:0.55, d:1.0, t:'ki'  }, dy: null },
-  'Ke':    { b: { g:0.72, d:1.0, t:'ka'  }, dy: null },
-  'Ge':    { b: { g:0.82, d:1.0, t:'ge'  }, dy: null },
-  'Gi':    { b: { g:0.70, d:1.0, t:'ge'  }, dy: null },
+  // ── Bayan only ─────────────────────────────────────────────────────────
+  'Ka':        { b:{ g:0.68, t:'ka'  }, dy:null },
+  'Ki':        { b:{ g:0.58, t:'ka'  }, dy:null },
+  'Ke':        { b:{ g:0.72, t:'ka'  }, dy:null },
+  'Ge':        { b:{ g:0.84, t:'ge'  }, dy:null },
+  'Gi':        { b:{ g:0.72, t:'ge'  }, dy:null },
 
-  // Rapid fills (two micro-hits in quick succession)
-  'KiTa':      { b: null,                       dy: { g:0.62, d:1.0, t:'ta'  }, rapid: true },
-  'TiTa':      { b: null,                       dy: { g:0.64, d:1.0, t:'te'  }, rapid: true },
-  'TrKt':      { b: null,                       dy: { g:0.60, d:1.0, t:'ta'  }, rapid: true },
-  'TunNa':     { b: null,                       dy: { g:0.70, d:1.0, t:'na'  }, rapid: true },
-  'DhaTr':     { b: { g:0.88, d:1.0, t:'open'}, dy: { g:0.80, d:1.0, t:'ta' }, rapid: true },
-  'DhaTrKt':   { b: { g:0.85, d:1.0, t:'open'}, dy: { g:0.75, d:1.0, t:'ta' }, rapid: true },
-  'GaDi':      { b: { g:0.65, d:1.0, t:'ge'  }, dy: { g:0.55, d:1.0, t:'na' }, rapid: true },
-  'GeNa':      { b: { g:0.70, d:1.0, t:'ge'  }, dy: { g:0.60, d:1.0, t:'na' }, rapid: true },
-  'KaTa':      { b: { g:0.62, d:1.0, t:'ka'  }, dy: { g:0.60, d:1.0, t:'ta' }, rapid: true },
-  'DhaTrKiTa': { b: { g:0.88, d:1.0, t:'open'}, dy: { g:0.78, d:1.0, t:'ta' }, rapid: true },
-  'DhinNa':    { b: { g:0.82, d:1.0, t:'open'}, dy: { g:0.75, d:1.0, t:'na' }, rapid: true },
-  'TiRaKiTa':  { b: null,                       dy: { g:0.60, d:1.0, t:'te' },  rapid: true },
-  'KaTaRaKiTa':{ b: null,                       dy: { g:0.58, d:1.0, t:'ta' },  rapid: true },
+  // ── Rapid fills ────────────────────────────────────────────────────────
+  'KiTa':       { b:null,               dy:{ g:0.64, t:'ta'  }, rapid:true },
+  'TiTa':       { b:null,               dy:{ g:0.66, t:'te'  }, rapid:true },
+  'TrKt':       { b:null,               dy:{ g:0.62, t:'ta'  }, rapid:true },
+  'TunNa':      { b:null,               dy:{ g:0.70, t:'na'  }, rapid:true },
+  'DhaTr':      { b:{ g:0.80, t:'open'}, dy:{ g:0.76, t:'ta' }, rapid:true, gap:0.008 },
+  'DhaTrKt':    { b:{ g:0.78, t:'open'}, dy:{ g:0.72, t:'ta' }, rapid:true, gap:0.008 },
+  'GaDi':       { b:{ g:0.66, t:'ge'  }, dy:{ g:0.60, t:'na' }, rapid:true, gap:0.010 },
+  'GeNa':       { b:{ g:0.70, t:'ge'  }, dy:{ g:0.62, t:'na' }, rapid:true, gap:0.010 },
+  'KaTa':       { b:{ g:0.64, t:'ka'  }, dy:{ g:0.62, t:'ta' }, rapid:true, gap:0.008 },
+  'DhaTrKiTa':  { b:{ g:0.84, t:'open'}, dy:{ g:0.78, t:'ta' }, rapid:true, gap:0.008 },
+  'DhinNa':     { b:{ g:0.76, t:'open'}, dy:{ g:0.72, t:'na' }, rapid:true, gap:0.009 },
+  'TiRaKiTa':   { b:null,               dy:{ g:0.62, t:'te'  }, rapid:true },
+  'KaTaRaKiTa': { b:null,               dy:{ g:0.60, t:'ta'  }, rapid:true },
 
-  // Silence
   '—': null, '-': null, '': null,
 };
 
-// ── Constants ─────────────────────────────────────────────────────────────
-// Dayan fundamental — tuned to C#5 area (~550 Hz), adjusted by pitch type
-const DAYAN_F0 = 550;
-// Bayan fundamental — tuned to D2 area (~140 Hz)
-const BAYAN_F0 = 140;
+// ── Tuning ────────────────────────────────────────────────────────────────
+const DAYAN_F0 = 520;  // Hz — right drum fundamental (~C5 area, warm middle tone)
+const BAYAN_F0 = 125;  // Hz — left drum fundamental (~B2 area, deep bass)
 
-// Inharmonic partial ratios for dayan (syahi effect)
-// Ratios measured from real tabla recordings (Ravi Bellare et al.)
-const DAYAN_PARTIALS = [
-  { ratio: 1.000, gainMul: 1.00, decayMul: 1.00 },
-  { ratio: 1.513, gainMul: 0.45, decayMul: 0.60 },
-  { ratio: 1.983, gainMul: 0.25, decayMul: 0.45 },
-  { ratio: 2.742, gainMul: 0.12, decayMul: 0.30 },
-];
+// ── Master chain: gain → warmth filter → destination ─────────────────────
+let _master = null;
+let _masterCtx = null;
 
-// ── Master gain ───────────────────────────────────────────────────────────
-let _masterGain = null;
-let _masterCtx  = null;
+function _ensureMaster(ctx) {
+  if (_master && _masterCtx === ctx) return;
+  const gain = ctx.createGain();
+  gain.gain.value = 0.82;
+
+  // Warm low-pass at 4.8 kHz — cuts any residual harshness
+  const warmth = ctx.createBiquadFilter();
+  warmth.type = 'lowpass';
+  warmth.frequency.value = 4800;
+  warmth.Q.value = 0.5;
+
+  gain.connect(warmth);
+  warmth.connect(ctx.destination);
+
+  _master    = gain;   // we write to the gain node
+  _masterCtx = ctx;
+}
 
 export function setMasterVolume(ctx, v) {
   _ensureMaster(ctx);
-  _masterGain.gain.setTargetAtTime(v, ctx.currentTime, 0.02);
-}
-
-function _ensureMaster(ctx) {
-  if (_masterGain && _masterCtx === ctx) return;
-  _masterGain = ctx.createGain();
-  _masterGain.gain.value = 0.85;
-  _masterGain.connect(ctx.destination);
-  _masterCtx = ctx;
+  _master.gain.setTargetAtTime(v * 0.9, ctx.currentTime, 0.02);
 }
 
 function _dest(ctx) {
   _ensureMaster(ctx);
-  return _masterGain;
+  return _master;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────
@@ -116,231 +112,205 @@ export function playBol(ctx, bolName, audioTime, {
 } = {}) {
   const def = BOL_MAP[bolName];
   if (def === undefined) {
-    // Unknown bol — gentle tap so rhythm isn't lost
-    _dayan(ctx, audioTime, 'na', 0.35 * volume, false);
+    _dayan(ctx, audioTime, 'na', 0.35 * volume);
     return;
   }
-  if (def === null) return; // rest
+  if (!def) return;
 
   const jitter = humanize > 0 ? (Math.random() * 2 - 1) * humanize : 0;
   const t      = Math.max(ctx.currentTime + 0.001, audioTime + jitter);
-  const boost  = isSam ? 1.15 : 1.0;
+  const boost  = isSam ? 1.12 : 1.0;
+  const gap    = def.gap || 0;
 
   if (def.b && !muteBayan) {
     _bayan(ctx, t, def.b.t, def.b.g * volume * boost);
   }
 
   if (def.dy && !muteDayan) {
-    const gap = 0.052; // ~52ms between rapid sub-hits
+    const dyT = t + gap;   // dayan arrives slightly after bayan — they "glue"
     if (def.rapid) {
-      _dayan(ctx, t,       def.dy.t, def.dy.g * volume * boost * 0.88, def.dy.t === 'ta' || def.dy.t === 'te');
-      _dayan(ctx, t + gap, def.dy.t, def.dy.g * volume * boost * 0.70, def.dy.t === 'ta' || def.dy.t === 'te');
+      const gap2 = 0.050;
+      _dayan(ctx, dyT,        def.dy.t, def.dy.g * volume * boost * 0.90);
+      _dayan(ctx, dyT + gap2, def.dy.t, def.dy.g * volume * boost * 0.72);
     } else {
-      _dayan(ctx, t, def.dy.t, def.dy.g * volume * boost, false);
+      _dayan(ctx, dyT, def.dy.t, def.dy.g * volume * boost);
     }
   }
 }
 
-// ── Dayan synthesiser ─────────────────────────────────────────────────────
-// Types: 'na' (open resonant), 'tin' (high resonant), 'ta' (muted slap),
-//        'te' (muted finger), 'na' default
-function _dayan(ctx, t, type, gain, _ignoredMuted) {
+// ── DAYAN (right / treble drum) ───────────────────────────────────────────
+//
+// The characteristic tabla sound.  Kept deliberately SIMPLE:
+//   • 1 main sine oscillator (fundamental)
+//   • 1 gentle harmonic at 1.51× (just enough inharmonicity for "singing")
+//   • 1 very soft skin-thwack (low-mid bandpass noise, SHORT)
+//   • NO high-frequency content
+//
+function _dayan(ctx, t, type, gain) {
   const dest = _dest(ctx);
 
-  // Frequency and decay vary by stroke type
-  let f0, decayTime, muted, pitchGlide;
+  let f0, ringTime, muted;
   switch (type) {
-    case 'tin': f0 = DAYAN_F0 * 1.06; decayTime = 0.90; muted = false; pitchGlide =  0.08; break;
-    case 'ta':  f0 = DAYAN_F0 * 1.04; decayTime = 0.14; muted = true;  pitchGlide = -0.01; break;
-    case 'te':  f0 = DAYAN_F0 * 1.02; decayTime = 0.10; muted = true;  pitchGlide = -0.01; break;
-    default:    f0 = DAYAN_F0 * 1.00; decayTime = 0.65; muted = false; pitchGlide =  0.05; break;
+    case 'tin': f0 = DAYAN_F0 * 1.05; ringTime = 1.00; muted = false; break;
+    case 'ta':  f0 = DAYAN_F0 * 1.02; ringTime = 0.16; muted = true;  break;
+    case 'te':  f0 = DAYAN_F0 * 0.99; ringTime = 0.12; muted = true;  break;
+    default:    f0 = DAYAN_F0;         ringTime = 0.70; muted = false; break;
   }
 
-  const totalDur = decayTime + 0.08;
+  const totalDur = ringTime + 0.08;
 
-  // ── Master envelope for this stroke
-  const masterEnv = ctx.createGain();
-  masterEnv.gain.setValueAtTime(0, t);
-  masterEnv.gain.linearRampToValueAtTime(gain, t + 0.004);
+  // ── Fundamental (sine, warm)
+  const osc1 = ctx.createOscillator();
+  osc1.type = 'sine';
+  // Slight upward pitch glide on strike then settle (membrane stretch)
+  osc1.frequency.setValueAtTime(f0 * 1.04, t);
+  osc1.frequency.exponentialRampToValueAtTime(f0, t + 0.028);
+
+  // ── Inharmonic 2nd partial — light (gives "singing" quality without harshness)
+  const osc2 = ctx.createOscillator();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(f0 * 1.51 * 1.03, t);
+  osc2.frequency.exponentialRampToValueAtTime(f0 * 1.51, t + 0.022);
+
+  const g2 = ctx.createGain();
+  g2.gain.value = 0.18;   // very subtle — blend, not compete
+
+  // ── Amplitude envelope
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(gain, t + 0.006);    // soft attack (not a click)
+
   if (muted) {
-    masterEnv.gain.exponentialRampToValueAtTime(0.0001, t + decayTime);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + ringTime);
   } else {
-    masterEnv.gain.exponentialRampToValueAtTime(gain * 0.7,  t + 0.06);
-    masterEnv.gain.exponentialRampToValueAtTime(gain * 0.25, t + decayTime * 0.5);
-    masterEnv.gain.exponentialRampToValueAtTime(0.0001,      t + totalDur);
+    env.gain.setValueAtTime(gain, t + 0.010);
+    env.gain.exponentialRampToValueAtTime(gain * 0.55, t + 0.08);
+    env.gain.exponentialRampToValueAtTime(gain * 0.15, t + ringTime * 0.55);
+    env.gain.exponentialRampToValueAtTime(0.0001,       t + totalDur);
   }
-  masterEnv.connect(dest);
 
-  // ── Inharmonic partials (the syahi signature)
-  DAYAN_PARTIALS.forEach(({ ratio, gainMul, decayMul }) => {
-    const freq = f0 * ratio;
+  osc1.connect(env);
+  osc2.connect(g2); g2.connect(env);
+  env.connect(dest);
+  osc1.start(t); osc1.stop(t + totalDur + 0.05);
+  osc2.start(t); osc2.stop(t + totalDur + 0.05);
 
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
+  // ── Skin thwack — LOW-MID ONLY (1.2–2.8× f0), very short & soft
+  const thwack = _noiseNode(ctx, 0.040);
+  const thwFilt = ctx.createBiquadFilter();
+  thwFilt.type = 'bandpass';
+  thwFilt.frequency.value = f0 * 1.8;   // mid, not harsh
+  thwFilt.Q.value = 2.2;
 
-    // Pitch glide: brief upward bend on impact then settle (finger membrane physics)
-    osc.frequency.setValueAtTime(freq * (1 + pitchGlide * 1.8), t);
-    osc.frequency.exponentialRampToValueAtTime(freq * (1 + pitchGlide * 0.3), t + 0.018);
-    osc.frequency.exponentialRampToValueAtTime(freq, t + 0.065);
+  const thwEnv = ctx.createGain();
+  thwEnv.gain.setValueAtTime(gain * 0.28, t);            // subtle, not dominant
+  thwEnv.gain.exponentialRampToValueAtTime(0.0001, t + (muted ? 0.018 : 0.038));
 
-    const partialGain = ctx.createGain();
-    partialGain.gain.value = gainMul;
-
-    osc.connect(partialGain);
-    partialGain.connect(masterEnv);
-    osc.start(t);
-    osc.stop(t + totalDur + 0.06);
-  });
-
-  // ── Percussive attack transient (finger slap noise burst)
-  const slap = _noiseSource(ctx, 0.055);
-  const slapFilt = ctx.createBiquadFilter();
-  slapFilt.type = 'bandpass';
-  slapFilt.frequency.value = f0 * 3.2;
-  slapFilt.Q.value = 3.5;
-
-  const slapEnv = ctx.createGain();
-  slapEnv.gain.setValueAtTime(gain * 0.70, t);
-  slapEnv.gain.exponentialRampToValueAtTime(0.0001, t + (muted ? 0.022 : 0.050));
-
-  slap.connect(slapFilt);
-  slapFilt.connect(slapEnv);
-  slapEnv.connect(dest);
-  slap.start(t);
-  slap.stop(t + 0.056);
-
-  // ── High-frequency skin click (very short)
-  const click = _noiseSource(ctx, 0.012);
-  const clickFilt = ctx.createBiquadFilter();
-  clickFilt.type = 'highpass';
-  clickFilt.frequency.value = 4500;
-
-  const clickEnv = ctx.createGain();
-  clickEnv.gain.setValueAtTime(gain * 0.35, t);
-  clickEnv.gain.exponentialRampToValueAtTime(0.0001, t + 0.012);
-
-  click.connect(clickFilt);
-  clickFilt.connect(clickEnv);
-  clickEnv.connect(dest);
-  click.start(t);
-  click.stop(t + 0.013);
-
-  // ── Resonant body (simulate drum shell + air column)
-  if (!muted) {
-    const body = ctx.createOscillator();
-    body.type = 'sine';
-    body.frequency.value = f0 * 0.498; // sub-octave body resonance
-    const bodyEnv = ctx.createGain();
-    bodyEnv.gain.setValueAtTime(gain * 0.08, t + 0.010);
-    bodyEnv.gain.exponentialRampToValueAtTime(0.0001, t + totalDur * 0.6);
-    body.connect(bodyEnv);
-    bodyEnv.connect(dest);
-    body.start(t + 0.008);
-    body.stop(t + totalDur * 0.6);
-  }
+  thwack.connect(thwFilt); thwFilt.connect(thwEnv); thwEnv.connect(dest);
+  thwack.start(t); thwack.stop(t + 0.042);
 }
 
-// ── Bayan synthesiser ─────────────────────────────────────────────────────
-// Types: 'open' (Dha/Dhin), 'ge' (resonant palm), 'ka'/'ki' (muted thump)
+// ── BAYAN (left / bass drum) ──────────────────────────────────────────────
+//
+// Deep bass character. In joint bols its job is to SUPPORT, not compete.
+//   • Pure sine sub-bass with smooth pitch drop
+//   • 'ge' type: deep wah sweep (wrist pressure), long decay
+//   • 'ka' type: short muted thump
+//   • 'open' (in Dha/Dhin): moderate thud, sits below the dayan
+//
 function _bayan(ctx, t, type, gain) {
   const dest = _dest(ctx);
 
-  let f0, decayTime, pitchStart, pitchEnd, pitchTime;
+  let f0, decayTime, pitchRatio, sweepTime;
   switch (type) {
-    case 'ge':   // Deep resonant open palm — long wah
-      f0 = BAYAN_F0 * 0.85; decayTime = 1.1;
-      pitchStart = f0 * 1.60; pitchEnd = f0 * 0.72; pitchTime = 0.15;
+    case 'ge':
+      f0 = BAYAN_F0 * 0.88; decayTime = 1.20;
+      pitchRatio = 1.70; sweepTime = 0.18;
       break;
-    case 'ka':   // Muted bass thump
-    case 'ki':
+    case 'ka':
       f0 = BAYAN_F0 * 1.05; decayTime = 0.22;
-      pitchStart = f0 * 1.3;  pitchEnd = f0;         pitchTime = 0.04;
+      pitchRatio = 1.30; sweepTime = 0.040;
       break;
-    default:     // 'open' — Dha/Dhin companion stroke
-      f0 = BAYAN_F0;         decayTime = 0.80;
-      pitchStart = f0 * 1.45; pitchEnd = f0 * 0.88; pitchTime = 0.08;
+    default: // 'open' — used in Dha/Dhin
+      f0 = BAYAN_F0;       decayTime = 0.65;
+      pitchRatio = 1.45; sweepTime = 0.070;
   }
 
-  const muted  = (type === 'ka' || type === 'ki');
+  const muted   = (type === 'ka');
   const totalDur = decayTime + 0.10;
+  const endFreq  = (type === 'ge') ? f0 * 0.72 : f0;
 
-  // ── Sub-bass fundamental
-  const sub = ctx.createOscillator();
-  sub.type = 'sine';
-  sub.frequency.setValueAtTime(pitchStart, t);
-  sub.frequency.exponentialRampToValueAtTime(pitchEnd, t + pitchTime);
+  // ── Sub-bass sine
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(f0 * pitchRatio, t);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, t + sweepTime);
 
-  const subEnv = ctx.createGain();
-  subEnv.gain.setValueAtTime(0, t);
-  subEnv.gain.linearRampToValueAtTime(gain, t + 0.006);
+  // ── Envelope
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(gain, t + 0.007);
   if (muted) {
-    subEnv.gain.exponentialRampToValueAtTime(0.0001, t + decayTime);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + decayTime);
   } else {
-    subEnv.gain.exponentialRampToValueAtTime(gain * 0.65, t + 0.08);
-    subEnv.gain.exponentialRampToValueAtTime(gain * 0.20, t + decayTime * 0.55);
-    subEnv.gain.exponentialRampToValueAtTime(0.0001, t + totalDur);
+    env.gain.exponentialRampToValueAtTime(gain * 0.70, t + 0.07);
+    env.gain.exponentialRampToValueAtTime(gain * 0.20, t + decayTime * 0.50);
+    env.gain.exponentialRampToValueAtTime(0.0001,       t + totalDur);
   }
-  sub.connect(subEnv); subEnv.connect(dest);
-  sub.start(t); sub.stop(t + totalDur + 0.06);
 
-  // ── Second harmonic for warmth
-  const harm2 = ctx.createOscillator();
-  harm2.type = 'sine';
-  harm2.frequency.setValueAtTime(pitchStart * 2.0, t);
-  harm2.frequency.exponentialRampToValueAtTime(pitchEnd * 2.0, t + pitchTime);
+  // ── Warmth LPF on bayan (keeps it from muddying the dayan range)
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 700;
+  lp.Q.value = 0.6;
 
-  const h2Env = ctx.createGain();
-  h2Env.gain.setValueAtTime(gain * 0.22, t + 0.003);
-  h2Env.gain.exponentialRampToValueAtTime(0.0001, t + (muted ? decayTime * 0.5 : totalDur * 0.6));
+  osc.connect(env); env.connect(lp); lp.connect(dest);
+  osc.start(t); osc.stop(t + totalDur + 0.06);
 
-  harm2.connect(h2Env); h2Env.connect(dest);
-  harm2.start(t); harm2.stop(t + totalDur * 0.6 + 0.05);
+  // ── Gentle thump noise for "skin impact" feel (low-mid only)
+  const thump = _noiseNode(ctx, 0.035);
+  const tFilt = ctx.createBiquadFilter();
+  tFilt.type = 'lowpass';
+  tFilt.frequency.value = 400;
 
-  // ── Thump attack noise
-  const thump = _noiseSource(ctx, 0.05);
-  const thumpFilt = ctx.createBiquadFilter();
-  thumpFilt.type = 'lowpass';
-  thumpFilt.frequency.value = 600;
-  thumpFilt.Q.value = 1.2;
+  const tEnv = ctx.createGain();
+  tEnv.gain.setValueAtTime(gain * 0.35, t);
+  tEnv.gain.exponentialRampToValueAtTime(0.0001, t + 0.032);
 
-  const thumpEnv = ctx.createGain();
-  thumpEnv.gain.setValueAtTime(gain * 0.80, t);
-  thumpEnv.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+  thump.connect(tFilt); tFilt.connect(tEnv); tEnv.connect(dest);
+  thump.start(t); thump.stop(t + 0.038);
 
-  thump.connect(thumpFilt); thumpFilt.connect(thumpEnv); thumpEnv.connect(dest);
-  thump.start(t); thump.stop(t + 0.052);
-
-  // ── Ge "wah" resonance: sweep resonant filter for palm-pressure effect
+  // ── Ge "wah" resonance (wrist presses membrane, pitch rises then falls)
   if (type === 'ge') {
-    const wahOsc = ctx.createOscillator();
-    wahOsc.type = 'sine';
-    wahOsc.frequency.setValueAtTime(f0 * 2.85, t);
-    wahOsc.frequency.exponentialRampToValueAtTime(f0 * 1.60, t + 0.18);
+    const wah = ctx.createOscillator();
+    wah.type = 'sine';
+    wah.frequency.setValueAtTime(f0 * 2.60, t);
+    wah.frequency.exponentialRampToValueAtTime(f0 * 1.50, t + 0.20);
+    wah.frequency.exponentialRampToValueAtTime(f0 * 1.10, t + 0.55);
 
-    const wahEnv = ctx.createGain();
-    wahEnv.gain.setValueAtTime(gain * 0.18, t + 0.01);
-    wahEnv.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+    const wEnv = ctx.createGain();
+    wEnv.gain.setValueAtTime(gain * 0.16, t + 0.008);
+    wEnv.gain.exponentialRampToValueAtTime(0.0001, t + 0.60);
 
-    wahOsc.connect(wahEnv); wahEnv.connect(dest);
-    wahOsc.start(t + 0.005); wahOsc.stop(t + 0.36);
+    wah.connect(wEnv); wEnv.connect(dest);
+    wah.start(t + 0.005); wah.stop(t + 0.62);
   }
 }
 
 // ── Noise buffer cache ────────────────────────────────────────────────────
-const _noiseCache = new WeakMap();
+const _nCache = new WeakMap();
 
-function _noiseSource(ctx, dur) {
+function _noiseNode(ctx, dur) {
   const frames = Math.ceil(ctx.sampleRate * dur);
-  // Check cache keyed by frame count
-  let ctxCache = _noiseCache.get(ctx);
-  if (!ctxCache) { ctxCache = {}; _noiseCache.set(ctx, ctxCache); }
-  if (!ctxCache[frames]) {
-    const buf = ctx.createBuffer(1, frames, ctx.sampleRate);
+  let cc = _nCache.get(ctx);
+  if (!cc) { cc = {}; _nCache.set(ctx, cc); }
+  if (!cc[frames]) {
+    const buf  = ctx.createBuffer(1, frames, ctx.sampleRate);
     const data = buf.getChannelData(0);
     for (let i = 0; i < frames; i++) data[i] = Math.random() * 2 - 1;
-    ctxCache[frames] = buf;
+    cc[frames] = buf;
   }
   const src = ctx.createBufferSource();
-  src.buffer = ctxCache[frames];
+  src.buffer = cc[frames];
   return src;
 }
