@@ -32,6 +32,13 @@
       ]
     },
     {
+      "source": "/samples/(.*)",
+      "headers": [
+        { "key": "Cache-Control",  "value": "public, max-age=604800, immutable" },
+        { "key": "Content-Type",   "value": "audio/wav" }
+      ]
+    },
+    {
       "source": "/icons/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400" }
