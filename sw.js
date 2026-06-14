@@ -1,16 +1,16 @@
 /**
- * SERVICE WORKER — Raag Studio PWA
+ * SERVICE WORKER — Raag Studio PWA v3
  *
  * Strategy:
- *  • App shell (HTML/CSS/JS): Cache-first with network fallback.
- *  • Audio samples: NOT cached by SW — handled by IndexedDB in the app.
- *  • Navigation fallback: serves index.html for any non-matching navigate request.
+ *  • HTML (navigation): Network-first → fallback to cache (always fresh shell)
+ *  • CSS / JS assets: Cache-first → fallback to network
+ *  • Audio samples: Pass-through (handled by IndexedDB in the app)
  *
  * Cache versioning: bump CACHE_NAME on every deployment to force
- * clients to re-fetch the app shell.
+ * clients to re-fetch the app shell and invalidate all stale caches.
  */
 
-const CACHE_NAME = 'raag-studio-shell-v2';
+const CACHE_NAME = 'raag-studio-v3';
 
 const SHELL_ASSETS = [
   '/',
@@ -53,43 +53,71 @@ self.addEventListener('install', event => {
       .then(cache => cache.addAll(SHELL_ASSETS))
       .catch(err => console.warn('[SW] Precache partial failure:', err))
   );
-  // Take control immediately — don't wait for old SW to die
+  // Skip waiting — take control immediately without waiting for old SW to die
   self.skipWaiting();
 });
 
-// ── Activate: Clean up old caches ─────────────────────────────────────────
+// ── Activate: Delete ALL old caches and claim all clients ─────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys
           .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
+          .map(key => {
+            console.log('[SW] Deleting old cache:', key);
+            return caches.delete(key);
+          })
       )
-    )
+    ).then(() => {
+      // Force all open tabs to use the new SW immediately
+      return self.clients.claim();
+    }).then(() => {
+      // Tell all clients to reload so they get the new HTML
+      return self.clients.matchAll({ type: 'window' }).then(clients => {
+        clients.forEach(client => {
+          client.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
+        });
+      });
+    })
   );
-  // Take control of all clients immediately
-  self.clients.claim();
 });
 
-// ── Fetch: Cache-first for app shell, pass-through for external ───────────
+// ── Fetch strategy ────────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Let audio sample requests pass through — app handles these via IDB
+  // Pass-through: audio samples (app caches these via IndexedDB)
   if (url.hostname === 'raw.githubusercontent.com') return;
 
-  // Let Google Fonts pass through (CDN, always online, not worth caching in SW)
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') return;
+  // Pass-through: Google Fonts (CDN)
+  if (url.hostname.includes('googleapis.com') || url.hostname.includes('gstatic.com')) return;
 
-  // Cache-first strategy for same-origin requests
-  if (url.origin === self.location.origin) {
+  // Only handle same-origin requests
+  if (url.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {
+    // HTML navigation: network-first so we always serve fresh HTML
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => {
+          // Offline fallback
+          return caches.match('/index.html');
+        })
+    );
+  } else {
+    // CSS / JS / images: cache-first for performance
     event.respondWith(
       caches.match(request).then(cached => {
         if (cached) return cached;
-
-        // Not in cache — fetch from network and cache it
         return fetch(request).then(response => {
           if (response.ok && request.method === 'GET') {
             const clone = response.clone();
@@ -97,11 +125,6 @@ self.addEventListener('fetch', event => {
           }
           return response;
         }).catch(() => {
-          // Offline and not in cache — serve index.html for navigate requests
-          if (request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-          // Return empty 408 for other resources that fail offline
           return new Response('', { status: 408, statusText: 'Offline' });
         });
       })
