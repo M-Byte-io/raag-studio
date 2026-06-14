@@ -42,6 +42,7 @@ import { initKeyboard }                       from './keyboard.js';
 // ── Tala engine + UI ─────────────────────────────────────────────────────
 import { createTalaEngine, getTalaEngine }  from './tala/engine.js';
 import { TALAS }                            from './tala/definitions.js';
+import { preloadSamples }                   from './tala/synth.js';
 import { initTalaUI, renderTalaSelector, renderBolStrip, renderAvartaRing,
          highlightBolCell, resetBolStrip, updateAvartaRing,
          updateTalaBeatCounter, updateTalaCycleCounter,
@@ -833,6 +834,9 @@ let _talaEngine = null;
 
 function _initTala() {
   _talaEngine = createTalaEngine(() => { ensureAudio(); return getCtx(); });
+  // Preload real tabla samples in background as soon as audio is available
+  ensureAudio();
+  preloadSamples(getCtx()).catch(() => {});
 
   const talaName = get('talaName');
 
