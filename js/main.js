@@ -584,7 +584,7 @@ function _initPWA() {
 // ── Service Worker ────────────────────────────────────────────────────────
 function _registerSW() {
   if (!('serviceWorker' in navigator)) return;
-  navigator.serviceWorker.register('/sw.js').catch(err => {
+  navigator.serviceWorker.register('sw.js').catch(err => {
     console.warn('SW registration failed:', err);
   });
   // Listen for the new SW telling us it activated — prompt user to reload

@@ -1,104 +1,100 @@
 /**
- * SERVICE WORKER — Raag Studio PWA v3
+ * SERVICE WORKER — Raag Studio PWA v4
+ *
+ * Dynamically computes BASE from sw.js location so this works at ANY
+ * subpath (e.g. /raag-studio/ on GitHub Pages, or / on Vercel).
  *
  * Strategy:
- *  • HTML (navigation): Network-first → fallback to cache (always fresh shell)
- *  • CSS / JS assets: Cache-first → fallback to network
- *  • Audio samples: Pass-through (handled by IndexedDB in the app)
- *
- * Cache versioning: bump CACHE_NAME on every deployment to force
- * clients to re-fetch the app shell and invalidate all stale caches.
+ *  • HTML navigation → network-first (always fresh shell)
+ *  • CSS / JS / icons → cache-first (fast, revalidated on deploy)
+ *  • Audio samples → pass-through (IndexedDB handles these)
  */
 
-const CACHE_NAME = 'raag-studio-v3';
+// Derive the base path from where this SW file is located.
+// On GitHub Pages: self.location.pathname = '/raag-studio/sw.js'  → BASE = '/raag-studio/'
+// On Vercel/root:  self.location.pathname = '/sw.js'              → BASE = '/'
+const BASE = self.location.pathname.replace(/sw\.js$/, '');
+
+const CACHE_NAME = 'raag-studio-v4';
 
 const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/css/tokens.css',
-  '/css/animations.css',
-  '/css/layout.css',
-  '/css/components.css',
-  '/js/main.js',
-  '/js/state.js',
-  '/js/keyboard.js',
-  '/js/data/swaras.js',
-  '/js/data/thaats.js',
-  '/js/data/presets.js',
-  '/js/audio/context.js',
-  '/js/audio/synth.js',
-  '/js/audio/sampler.js',
-  '/js/audio/tanpura.js',
-  '/js/engine/scheduler.js',
-  '/js/engine/sequence.js',
-  '/js/ui/palette.js',
-  '/js/ui/pattern.js',
-  '/js/ui/presets-ui.js',
-  '/js/ui/generator.js',
-  '/js/ui/playback.js',
-  '/js/ui/viz.js',
-  '/js/tala/definitions.js',
-  '/js/tala/synth.js',
-  '/js/tala/engine.js',
-  '/js/ui/tala-ui.js',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg',
+  `${BASE}`,
+  `${BASE}index.html`,
+  `${BASE}manifest.json`,
+  `${BASE}css/tokens.css`,
+  `${BASE}css/animations.css`,
+  `${BASE}css/layout.css`,
+  `${BASE}css/components.css`,
+  `${BASE}js/main.js`,
+  `${BASE}js/state.js`,
+  `${BASE}js/keyboard.js`,
+  `${BASE}js/data/swaras.js`,
+  `${BASE}js/data/thaats.js`,
+  `${BASE}js/data/presets.js`,
+  `${BASE}js/audio/context.js`,
+  `${BASE}js/audio/synth.js`,
+  `${BASE}js/audio/sampler.js`,
+  `${BASE}js/audio/tanpura.js`,
+  `${BASE}js/engine/scheduler.js`,
+  `${BASE}js/engine/sequence.js`,
+  `${BASE}js/ui/palette.js`,
+  `${BASE}js/ui/pattern.js`,
+  `${BASE}js/ui/presets-ui.js`,
+  `${BASE}js/ui/generator.js`,
+  `${BASE}js/ui/playback.js`,
+  `${BASE}js/ui/viz.js`,
+  `${BASE}js/tala/definitions.js`,
+  `${BASE}js/tala/synth.js`,
+  `${BASE}js/tala/engine.js`,
+  `${BASE}js/ui/tala-ui.js`,
+  `${BASE}icons/icon-192.svg`,
+  `${BASE}icons/icon-512.svg`,
 ];
 
-// ── Install: Precache app shell ───────────────────────────────────────────
+// ── Install ───────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(SHELL_ASSETS))
       .catch(err => console.warn('[SW] Precache partial failure:', err))
   );
-  // Skip waiting — take control immediately without waiting for old SW to die
   self.skipWaiting();
 });
 
-// ── Activate: Delete ALL old caches and claim all clients ─────────────────
+// ── Activate: delete all old caches, claim clients ────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => {
-            console.log('[SW] Deleting old cache:', key);
-            return caches.delete(key);
-          })
-      )
-    ).then(() => {
-      // Force all open tabs to use the new SW immediately
-      return self.clients.claim();
-    }).then(() => {
-      // Tell all clients to reload so they get the new HTML
-      return self.clients.matchAll({ type: 'window' }).then(clients => {
-        clients.forEach(client => {
-          client.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
-        });
-      });
-    })
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => {
+          console.log('[SW] Deleting old cache:', k);
+          return caches.delete(k);
+        })
+      ))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }).then(clients => {
+        clients.forEach(c => c.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME }));
+      }))
   );
 });
 
-// ── Fetch strategy ────────────────────────────────────────────────────────
+// ── Fetch ─────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Pass-through: audio samples (app caches these via IndexedDB)
+  // Pass-through: audio samples (IndexedDB)
   if (url.hostname === 'raw.githubusercontent.com') return;
 
-  // Pass-through: Google Fonts (CDN)
+  // Pass-through: Google Fonts
   if (url.hostname.includes('googleapis.com') || url.hostname.includes('gstatic.com')) return;
 
-  // Only handle same-origin requests
+  // Only handle same-origin requests under our base path
   if (url.origin !== self.location.origin) return;
+  if (!url.pathname.startsWith(BASE.replace(/\/$/, '') || '/')) return;
 
   if (request.mode === 'navigate') {
-    // HTML navigation: network-first so we always serve fresh HTML
+    // HTML: network-first so shell is always fresh
     event.respondWith(
       fetch(request)
         .then(response => {
@@ -108,13 +104,10 @@ self.addEventListener('fetch', event => {
           }
           return response;
         })
-        .catch(() => {
-          // Offline fallback
-          return caches.match('/index.html');
-        })
+        .catch(() => caches.match(`${BASE}index.html`))
     );
   } else {
-    // CSS / JS / images: cache-first for performance
+    // Assets: cache-first
     event.respondWith(
       caches.match(request).then(cached => {
         if (cached) return cached;
@@ -124,9 +117,7 @@ self.addEventListener('fetch', event => {
             caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
           }
           return response;
-        }).catch(() => {
-          return new Response('', { status: 408, statusText: 'Offline' });
-        });
+        }).catch(() => new Response('', { status: 408, statusText: 'Offline' }));
       })
     );
   }
