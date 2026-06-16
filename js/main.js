@@ -1,14 +1,14 @@
 /**
- * MAIN — App initialization and orchestration.
+ * MAIN â App initialization and orchestration.
  *
  * This is the single entry point. It wires together all modules:
- * state ↔ audio ↔ scheduler ↔ UI ↔ keyboard.
+ * state â audio â scheduler â UI â keyboard.
  *
  * New features implemented here:
- *  • U1: Keyboard note entry (via keyboard.js)
- *  • U4: Tap tempo
- *  • U7: URL share / restore from URL hash
- *  • PWA install prompt
+ *  â¢ U1: Keyboard note entry (via keyboard.js)
+ *  â¢ U4: Tap tempo
+ *  â¢ U7: URL share / restore from URL hash
+ *  â¢ PWA install prompt
  */
 
 import { get, set, subscribe, persistSaved, snapshot } from './state.js';
@@ -39,7 +39,7 @@ import { initViz, setVizPlaying, vizPulse }                        from './ui/vi
 
 import { initKeyboard }                       from './keyboard.js';
 
-// ── Tala engine + UI ─────────────────────────────────────────────────────
+// ââ Tala engine + UI âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 import { createTalaEngine, getTalaEngine }  from './tala/engine.js';
 import { TALAS }                            from './tala/definitions.js';
 import { preloadSamples }                   from './tala/synth.js';
@@ -52,9 +52,9 @@ import { initTalaUI, renderTalaSelector, renderBolStrip, renderAvartaRing,
 
 // -- Swaroscope --
 import { PitchEngine }   from './audio/pitch-engine.js';
-import { Swaroscope }    from './ui/swaroscope.js';
+import { VisualizationEngine } from './ui/swaroscope/visualization-engine.js';
 
-// ── Scheduler instance ────────────────────────────────────────────────────
+// ââ Scheduler instance ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const scheduler = new Scheduler(() => getCtx());
 
 // -- Swaroscope instances
@@ -63,12 +63,12 @@ let _swaroscope   = null;
 let _scopeRunning = false;
 let _scopeMode    = 'monitor';
 
-// ── Beat phase ────────────────────────────────────────────────────────────
+// ââ Beat phase ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let _beatPhase = 0;
 let _playQueueLength = 0;
 let _shiftMap = null;
 
-// ── Tap tempo (U4) ────────────────────────────────────────────────────────
+// ââ Tap tempo (U4) ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const _tapTimes = [];
 function tapTempo() {
   const now = performance.now();
@@ -84,7 +84,7 @@ function tapTempo() {
   }
 }
 
-// ── URL Share (U7) ────────────────────────────────────────────────────────
+// ââ URL Share (U7) ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function sharePattern() {
   const s = snapshot();
   if (!s.pattern.length) { showToast('Add notes first!'); return; }
@@ -93,7 +93,7 @@ function sharePattern() {
     const encoded = btoa(JSON.stringify(data));
     const url     = `${location.origin}${location.pathname}#p=${encoded}`;
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(() => showToast('🔗 Link copied!'));
+      navigator.clipboard.writeText(url).then(() => showToast('ð— Link copied!'));
     } else {
       prompt('Copy this link:', url);
     }
@@ -111,12 +111,12 @@ function _restoreFromUrl() {
       if (data.basePitch !== undefined) setBasePitch(data.basePitch);
       renderPattern(get('pattern'), { onRemove, onPreview: previewNote });
       renderFlowNotes(get('pattern'), get('direction'), get('repeats'));
-      showToast('✓ Pattern loaded from link!');
+      showToast('â Pattern loaded from link!');
     }
-  } catch { /* malformed URL — ignore */ }
+  } catch { /* malformed URL â ignore */ }
 }
 
-// ── Audio helpers ─────────────────────────────────────────────────────────
+// ââ Audio helpers âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function playNote(freq, dur, t) {
   const wave = get('wave');
@@ -134,7 +134,7 @@ function previewNote(note) {
   playNote(freq, 0.35, ctx.currentTime);
 }
 
-// ── Playback ──────────────────────────────────────────────────────────────
+// ââ Playback ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function togglePlay() { get('playing') ? stopPlay() : startPlay(); }
 
@@ -167,8 +167,8 @@ function startPlay() {
     },
     onUINote: (note, idx) => {
       const sw = getSw(note.id); if (!sw) return;
-      const octMark = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
-      const durMark = note.dur === 2 ? ' ·' : note.dur === 0.5 ? '·' : '';
+      const octMark = note.o === -1 ? 'â' : note.o === 1 ? 'âº' : '';
+      const durMark = note.dur === 2 ? ' Â·' : note.dur === 0.5 ? 'Â·' : '';
       setNowNote(octMark + sw.label + durMark);
 
       const patIdx = idx % Math.max(pattern.length, 1);
@@ -186,7 +186,7 @@ function startPlay() {
     onComplete: () => {
       if (get('loop')) return; // scheduler handles loop internally
       stopPlay();
-      showToast('Alankar complete! 🎵');
+      showToast('Alankar complete! ðµ');
     },
     loop: get('loop'),
   });
@@ -216,7 +216,7 @@ function startPlayCustom(queue, shiftMap) {
     },
     onUINote: (note, idx) => {
       const sw = getSw(note.id); if (!sw) return;
-      const octMark = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
+      const octMark = note.o === -1 ? 'â' : note.o === 1 ? 'âº' : '';
       setNowNote(octMark + sw.label);
       highlightPaletteNote(note.id);
       setCyclePill(idx + 1, _playQueueLength);
@@ -262,7 +262,7 @@ function stopPlay() {
   hideGenPlayback();
 }
 
-// ── Controls ──────────────────────────────────────────────────────────────
+// ââ Controls ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function setTempo(v) {
   const t = Math.max(30, Math.min(500, parseInt(v)));
@@ -275,8 +275,8 @@ function setTempo(v) {
 }
 
 function adjustTempo(d) { setTempo(get('tempo') + d); }
-function halfSpeed()   { setTempo(Math.max(30, Math.round(get('tempo') / 2))); showToast(`½×: ${get('tempo')} BPM`); }
-function doubleSpeed() { setTempo(Math.min(500, Math.round(get('tempo') * 2))); showToast(`2×: ${get('tempo')} BPM`); }
+function halfSpeed()   { setTempo(Math.max(30, Math.round(get('tempo') / 2))); showToast(`Â½Ã—: ${get('tempo')} BPM`); }
+function doubleSpeed() { setTempo(Math.min(500, Math.round(get('tempo') * 2))); showToast(`2Ã—: ${get('tempo')} BPM`); }
 
 function setBeatType(n) {
   set('beatType', n);
@@ -355,7 +355,7 @@ function adjustGenReps(d) {
   if (el) el.textContent = r;
 }
 
-// ── Pattern ───────────────────────────────────────────────────────────────
+// ââ Pattern âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function addNote(swaraId) {
   const pattern = [...get('pattern'), { id: swaraId, o: get('nextOctOffset'), dur: get('nextDur') }];
@@ -396,7 +396,7 @@ function reversePattern() {
   renderFlowNotes(pattern, get('direction'), get('repeats'));
 }
 
-// ── Tanpura ───────────────────────────────────────────────────────────────
+// ââ Tanpura âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function toggleTanpura() {
   const on = document.getElementById('tanpuraToggle').checked;
@@ -413,7 +413,7 @@ function _restartTanpura() {
 
 function setTanpuraVol(v) { set('tanpuraVol', v / 100); }
 
-// ── Pattern Generator ─────────────────────────────────────────────────────
+// ââ Pattern Generator âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function onThaatChange(thaatName) {
   set('genInput', []);
@@ -429,7 +429,7 @@ function onThaatChange(thaatName) {
     res.innerHTML = '';
     const hint = document.createElement('div');
     hint.style.cssText = 'font-size:12px;color:var(--text3);text-align:center;padding:16px';
-    hint.textContent = 'Select a thaat, build an input pattern, then click ⚡ Generate';
+    hint.textContent = 'Select a thaat, build an input pattern, then click â¡ Generate';
     res.appendChild(hint);
   }
 }
@@ -500,7 +500,7 @@ function playAllShifts() {
   showToast(`Playing all ${shifts.length} shifts!`);
 }
 
-// ── Save / Load ───────────────────────────────────────────────────────────
+// ââ Save / Load âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function openSaveModal() {
   const pattern = get('pattern');
@@ -552,7 +552,7 @@ function loadSaved(idx) {
   showToast(`Loaded: ${a.name}`);
 }
 
-// ── Toast ─────────────────────────────────────────────────────────────────
+// ââ Toast âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 let _toastTimer = null;
 function showToast(msg, isError = false) {
@@ -564,7 +564,7 @@ function showToast(msg, isError = false) {
   _toastTimer = setTimeout(() => { t.classList.remove('show'); }, 2600);
 }
 
-// ── PWA Install ───────────────────────────────────────────────────────────
+// ââ PWA Install âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let _deferredInstall = null;
 
 function _initPWA() {
@@ -592,22 +592,22 @@ function _initPWA() {
   update();
 }
 
-// ── Service Worker ────────────────────────────────────────────────────────
+// ââ Service Worker ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 function _registerSW() {
   if (!('serviceWorker' in navigator)) return;
   navigator.serviceWorker.register('sw.js').catch(err => {
     console.warn('SW registration failed:', err);
   });
-  // Listen for the new SW telling us it activated — prompt user to reload
+  // Listen for the new SW telling us it activated â prompt user to reload
   navigator.serviceWorker.addEventListener('message', event => {
     if (event.data?.type === 'SW_UPDATED') {
-      showToast('App updated! Reloading…', false);
+      showToast('App updated! Reloadingâ¦', false);
       setTimeout(() => location.reload(), 1500);
     }
   });
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
+// ââ INIT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function init() {
   // UI init
@@ -673,7 +673,7 @@ function init() {
     if (e.target === e.currentTarget) closeSaveModal();
   });
 
-  // Audio context — prime on first user interaction
+  // Audio context â prime on first user interaction
   const primer = () => { ensureAudio(); loadSamplesForInstrument(get('wave')); document.removeEventListener('click', primer); };
   document.addEventListener('click', primer);
   // Also prime after 1s (for desktop users who haven't clicked yet but play immediately)
@@ -784,7 +784,7 @@ function _wireButtons() {
     b.addEventListener('click', () => setGenDirection(b.dataset.gdir));
   });
 
-  // ── Tala controls ──────────────────────────────────────────────────────
+  // ââ Tala controls ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
   document.getElementById('talaSelect')?.addEventListener('change', e => {
     set('talaName', e.target.value);
     _switchTala(e.target.value);
@@ -825,7 +825,7 @@ function _wireButtons() {
   });
 
   document.getElementById('humanizeSlider')?.addEventListener('input', e => {
-    const v = e.target.value / 1000; // ms → seconds
+    const v = e.target.value / 1000; // ms â seconds
     set('talaHumanize', v);
     const eng = getTalaEngine();
     if (eng) eng.humanize = v;
@@ -839,7 +839,7 @@ function _wireButtons() {
   document.getElementById('riyazStartRiyazBtn')?.addEventListener('click', _toggleRiyaz);
 }
 
-// ── Tala engine functions ─────────────────────────────────────────────────
+// ââ Tala engine functions âââââââââââââââââââââââââââââââââââââââââââââââââ
 
 let _talaEngine = null;
 
@@ -868,7 +868,7 @@ function _initTala() {
     updateTalaBeatCounter(beatIdx, tala.beats);
     updateTalaCycleCounter(cycleNum);
 
-    const statusText = isSam ? '✕ Sam' : isKhali ? '○ Khali' : bol;
+    const statusText = isSam ? 'â Sam' : isKhali ? 'â— Khali' : bol;
     updateTalaStatus(statusText, isSam ? 'sam' : 'running');
 
     // Pulse the viz on sam
@@ -923,7 +923,7 @@ function _startTala() {
   _talaEngine.start(get('talaName'), get('talaTempo'));
 
   updateTalaStartBtn(true);
-  updateTalaStatus('Running…', 'running');
+  updateTalaStatus('Runningâ¦', 'running');
   document.getElementById('talaActiveDot')?.classList.add('on');
 }
 
@@ -949,20 +949,20 @@ function _toggleRiyaz() {
   if (_riyazRunning) {
     _riyazRunning = false;
     btn?.classList.remove('active');
-    if (btn) btn.textContent = '⚡ Start Riyaz';
+    if (btn) btn.textContent = 'â¡ Start Riyaz';
     getTalaEngine()?.setRiyazMode({ enabled: false });
     showToast('Riyaz stopped');
   } else {
     _riyazRunning = true;
     btn?.classList.add('active');
-    if (btn) btn.textContent = '⏹ Stop Riyaz';
+    if (btn) btn.textContent = 'â¹ Stop Riyaz';
     const startBPM  = parseInt(document.getElementById('riyazStartBPM')?.value  ?? 60);
     const targetBPM = parseInt(document.getElementById('riyazTargetBPM')?.value ?? 140);
     const stepBPM   = parseInt(document.getElementById('riyazStepBPM')?.value   ?? 5);
     const stepSec   = parseInt(document.getElementById('riyazIntervalSec')?.value ?? 30);
     getTalaEngine()?.setRiyazMode({ enabled:true, startBPM, targetBPM, stepBPM, stepIntervalSec: stepSec });
     if (!get('talaRunning')) _startTala();
-    showToast(`Riyaz: ${startBPM} → ${targetBPM} BPM`);
+    showToast(`Riyaz: ${startBPM} â ${targetBPM} BPM`);
   }
 }
 
@@ -970,7 +970,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 
 // ------------------------------------------------------------------------------
-//  SWAROSCOPE � init + controller
+//  SWAROSCOPE — init + controller
 // ------------------------------------------------------------------------------
 
 function _initSwaroscope() {
@@ -987,7 +987,7 @@ function _initSwaroscope() {
     monitorBtn?.classList.toggle('active', _scopeMode === 'monitor');
     guidedBtn?.classList.toggle('active',  _scopeMode === 'guided');
     _swaroscope?.setMode(_scopeMode);
-    showToast(_scopeMode === 'guided' ? '?? Guided � play an alankar' : '?? Free Monitor');
+    showToast(_scopeMode === 'guided' ? '?? Guided — play an alankar' : '?? Free Monitor');
   }));
 
   // Mic toggle
@@ -1032,7 +1032,7 @@ function _initSwaroscope() {
     if (errorDiv) errorDiv.style.display = 'none';
     startBtn.textContent = '? Stop Mic';
     activeDot?.classList.add('on');
-    showToast('?? Swaroscope active � sing!');
+    showToast('?? Swaroscope active — sing!');
   });
 
   // Keep Sa in sync
@@ -1053,8 +1053,8 @@ function _onPitchResult(result) {
   const TCOL = { perfect:'#34d399', good:'#86efac', sharp:'#fbbf24', flat:'#fb923c' };
 
   if (!result) {
-    if (nameEl)  { nameEl.textContent = '�'; nameEl.style.color = 'var(--text3)'; nameEl.style.textShadow = ''; }
-    if (fullEl)   fullEl.textContent  = 'Listening�';
+    if (nameEl)  { nameEl.textContent = '—'; nameEl.style.color = 'var(--text3)'; nameEl.style.textShadow = ''; }
+    if (fullEl)   fullEl.textContent  = 'Listening…';
     if (freqEl)   freqEl.textContent  = '';
     if (centsEl)  { centsEl.textContent = ''; centsEl.style.color = 'var(--text3)'; }
     if (needleEl) { needleEl.style.left = '50%'; needleEl.style.background = 'var(--text3)'; needleEl.style.boxShadow = ''; }
@@ -1068,12 +1068,12 @@ function _onPitchResult(result) {
   if (nameEl)  { nameEl.textContent = swara.label; nameEl.style.color = col; nameEl.style.textShadow = `0 0 24px ${col}90`; }
   if (fullEl)  {
     const OCT = { '-1':'Mandra', 0:'Madhya', 1:'Taar', 2:'Ati-Taar' };
-    fullEl.textContent = `${swara.full} � ${OCT[swara.octOffset] ?? ''}`;
+    fullEl.textContent = `${swara.full} · ${OCT[swara.octOffset] ?? ''}`;
   }
   if (freqEl)  freqEl.textContent = `${hz} Hz`;
   if (centsEl) {
     const sign = swara.centsFromSwara >= 0 ? '+' : '';
-    centsEl.textContent = `${sign}${swara.centsFromSwara}�`;
+    centsEl.textContent = `${sign}${swara.centsFromSwara}¢`;
     centsEl.style.color = tuneC;
   }
   if (needleEl) {
@@ -1093,7 +1093,7 @@ function _onPitchResult(result) {
     const elStab = document.getElementById('statStability');
     if (elAcc)  elAcc.textContent  = `${s.accuracy}%`;
     if (elStr)  elStr.textContent  = `${(s.longestStreak / fps).toFixed(1)}s`;
-    if (elAvg)  elAvg.textContent  = `�${s.avgCents}�`;
+    if (elAvg)  elAvg.textContent  = `±${s.avgCents}¢`;
     if (elStab) elStab.textContent = `${s.stability}%`;
   }
 }
@@ -1101,10 +1101,10 @@ function _onPitchResult(result) {
 function _resetScopeUI() {
   ['pitchSwaraName','pitchSwaraFull','pitchFreq','pitchOctave'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) { el.textContent = id === 'pitchSwaraName' ? '�' : ''; el.style.color = ''; }
+    if (el) { el.textContent = id === 'pitchSwaraName' ? '—' : ''; el.style.color = ''; }
   });
   ['statAccuracy','statStreak','statAvgCents','statStability'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.textContent = '�';
+    const el = document.getElementById(id); if (el) el.textContent = '—';
   });
   const n = document.getElementById('tunerNeedle');
   if (n) { n.style.left = '50%'; n.style.background = 'var(--text3)'; n.style.boxShadow = ''; }

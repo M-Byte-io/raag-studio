@@ -17,7 +17,8 @@
  *   PitchEngine — manages mic, analyser, detection loop, history, stats
  */
 
-import { SWARAS } from '../data/swaras.js';
+import { WesternNoteEngine } from './western-note-engine.js';
+import { SwaraMappingEngine } from './swara-mapping-engine.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -248,39 +249,18 @@ export class PitchEngine {
   // ── Result builder ──────────────────────────────────────────────────────────
 
   _buildResult(hz, rms, midi) {
-    const midiRound  = Math.round(midi);
-    const cents      = Math.round((midi - midiRound) * 100);
-    const semitInOct = ((midiRound % 12) + 12) % 12;
-    const octave     = Math.floor(midiRound / 12) - 1;
-
-    // Swara mapping relative to basePitch
-    const semiAboveSa = midi - (_basePitchMidi(this._basePitch));
-    const semiRound   = Math.round(semiAboveSa);
-    const octOffset   = Math.floor(semiRound / 12);
-    const degree      = ((semiRound % 12) + 12) % 12;
-    const sw          = SWARAS.find(s => s.semit === degree) || SWARAS[0];
-    const centsFromSw = Math.round((semiAboveSa - semiRound) * 100);
+    const westernInfo = WesternNoteEngine.parseMidi(midi);
+    const swaraInfo   = SwaraMappingEngine.getSwaraFromMidi(midi, this._basePitch);
 
     return {
       hz:     Math.round(hz * 10) / 10,
       midi,
-      note:   WESTERN[semitInOct],
-      octave,
-      cents,
+      note:   westernInfo.noteName,
+      octave: westernInfo.octave,
+      cents:  westernInfo.cents,
+      fullNotation: westernInfo.fullNotation,
       rms:    Math.round(rms * 1000) / 1000,
-      swara: {
-        id:           sw.id,
-        label:        sw.label,
-        full:         sw.full,
-        type:         sw.type,
-        semit:        sw.semit,
-        octOffset,          // −1=Mandra, 0=Madhya, 1=Taar, 2=Ati-Taar
-        centsFromSwara: centsFromSw,
-        tuneStatus: Math.abs(centsFromSw) <= 15 ? 'perfect'
-                  : Math.abs(centsFromSw) <= 30 ? 'good'
-                  : centsFromSw > 0             ? 'sharp'
-                  :                               'flat',
-      },
+      swara:  swaraInfo,
     };
   }
 

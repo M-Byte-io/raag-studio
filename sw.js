@@ -15,7 +15,7 @@
 // On Vercel/root:  self.location.pathname = '/sw.js'              → BASE = '/'
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
 
-const CACHE_NAME = 'raag-studio-v6';
+const CACHE_NAME = 'raag-studio-v8';
 
 const SHELL_ASSETS = [
   `${BASE}`,
@@ -48,7 +48,13 @@ const SHELL_ASSETS = [
   `${BASE}js/tala/engine.js`,
   `${BASE}js/ui/tala-ui.js`,
   `${BASE}js/audio/pitch-engine.js`,
-  `${BASE}js/ui/swaroscope.js`,
+  `${BASE}js/audio/swara-mapping-engine.js`,
+  `${BASE}js/audio/western-note-engine.js`,
+  `${BASE}js/ui/swaroscope/frequency-axis-engine.js`,
+  `${BASE}js/ui/swaroscope/reference-grid-renderer.js`,
+  `${BASE}js/ui/swaroscope/pitch-contour-renderer.js`,
+  `${BASE}js/ui/swaroscope/target-bar-renderer.js`,
+  `${BASE}js/ui/swaroscope/visualization-engine.js`,
   `${BASE}js/ui/pitch-ui.js`,
   `${BASE}icons/icon-192.svg`,
   `${BASE}icons/icon-512.svg`,
