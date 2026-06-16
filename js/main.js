@@ -50,8 +50,18 @@ import { initTalaUI, renderTalaSelector, renderBolStrip, renderAvartaRing,
          setMuteButtons, toggleRiyazPanel,
          updateRiyazProgress, markRiyazComplete }  from './ui/tala-ui.js';
 
+// -- Swaroscope --
+import { PitchEngine }   from './audio/pitch-engine.js';
+import { Swaroscope }    from './ui/swaroscope.js';
+
 // ── Scheduler instance ────────────────────────────────────────────────────
 const scheduler = new Scheduler(() => getCtx());
+
+// -- Swaroscope instances
+let _pitchEngine  = null;
+let _swaroscope   = null;
+let _scopeRunning = false;
+let _scopeMode    = 'monitor';
 
 // ── Beat phase ────────────────────────────────────────────────────────────
 let _beatPhase = 0;
@@ -693,6 +703,7 @@ function init() {
   // Tala Companion
   initTalaUI();
   _initTala();
+  _initSwaroscope();
 }
 
 function _wireButtons() {
@@ -957,3 +968,144 @@ function _toggleRiyaz() {
 
 document.addEventListener('DOMContentLoaded', init);
 
+
+// ------------------------------------------------------------------------------
+//  SWAROSCOPE � init + controller
+// ------------------------------------------------------------------------------
+
+function _initSwaroscope() {
+  const startBtn   = document.getElementById('scopeStartBtn');
+  const activeDot  = document.getElementById('scopeActiveDot');
+  const errorDiv   = document.getElementById('scopeError');
+  const monitorBtn = document.getElementById('scopeMonitorBtn');
+  const guidedBtn  = document.getElementById('scopeGuidedBtn');
+  if (!startBtn) return;
+
+  // Mode switching
+  [monitorBtn, guidedBtn].forEach(btn => btn?.addEventListener('click', () => {
+    _scopeMode = btn.dataset.mode;
+    monitorBtn?.classList.toggle('active', _scopeMode === 'monitor');
+    guidedBtn?.classList.toggle('active',  _scopeMode === 'guided');
+    _swaroscope?.setMode(_scopeMode);
+    showToast(_scopeMode === 'guided' ? '?? Guided � play an alankar' : '?? Free Monitor');
+  }));
+
+  // Mic toggle
+  startBtn.addEventListener('click', async () => {
+    ensureAudio();
+    const ctx = getCtx();
+    if (!ctx) { showToast('Click somewhere first to unlock audio'); return; }
+
+    if (_scopeRunning) {
+      _pitchEngine?.stop();
+      _swaroscope?.stop();
+      _scopeRunning = false;
+      startBtn.textContent = '?? Enable Mic';
+      activeDot?.classList.remove('on');
+      _resetScopeUI();
+      return;
+    }
+
+    if (!_pitchEngine) {
+      _pitchEngine = new PitchEngine(ctx, { basePitch: get('basePitch') });
+      _pitchEngine.onError = () => {
+        if (errorDiv) errorDiv.style.display = 'block';
+        startBtn.textContent = '?? Enable Mic';
+        activeDot?.classList.remove('on');
+        _scopeRunning = false;
+      };
+      _pitchEngine.onResult = (result) => _onPitchResult(result);
+    } else {
+      _pitchEngine.setBasePitch(get('basePitch'));
+    }
+
+    if (!_swaroscope) _swaroscope = new Swaroscope('swaroscopeCanvas');
+
+    await _pitchEngine.start();
+    if (!_pitchEngine.isRunning) return;
+
+    _swaroscope.setMode(_scopeMode);
+    _swaroscope.setBasePitch(get('basePitch'));
+    _swaroscope.start(_pitchEngine, ctx);
+
+    _scopeRunning = true;
+    if (errorDiv) errorDiv.style.display = 'none';
+    startBtn.textContent = '? Stop Mic';
+    activeDot?.classList.add('on');
+    showToast('?? Swaroscope active � sing!');
+  });
+
+  // Keep Sa in sync
+  subscribe('basePitch', (v) => {
+    _pitchEngine?.setBasePitch(v);
+    _swaroscope?.setBasePitch(v);
+  });
+}
+
+function _onPitchResult(result) {
+  const nameEl   = document.getElementById('pitchSwaraName');
+  const fullEl   = document.getElementById('pitchSwaraFull');
+  const freqEl   = document.getElementById('pitchFreq');
+  const centsEl  = document.getElementById('pitchOctave');
+  const needleEl = document.getElementById('tunerNeedle');
+
+  const SCOL = { 'pa-sa':'#34d399','komal':'#f87171','teevra':'#fbbf24','shuddh':'#c084fc' };
+  const TCOL = { perfect:'#34d399', good:'#86efac', sharp:'#fbbf24', flat:'#fb923c' };
+
+  if (!result) {
+    if (nameEl)  { nameEl.textContent = '�'; nameEl.style.color = 'var(--text3)'; nameEl.style.textShadow = ''; }
+    if (fullEl)   fullEl.textContent  = 'Listening�';
+    if (freqEl)   freqEl.textContent  = '';
+    if (centsEl)  { centsEl.textContent = ''; centsEl.style.color = 'var(--text3)'; }
+    if (needleEl) { needleEl.style.left = '50%'; needleEl.style.background = 'var(--text3)'; needleEl.style.boxShadow = ''; }
+    return;
+  }
+
+  const { hz, swara } = result;
+  const col   = SCOL[swara.type] || '#c084fc';
+  const tuneC = TCOL[swara.tuneStatus] || '#f87171';
+
+  if (nameEl)  { nameEl.textContent = swara.label; nameEl.style.color = col; nameEl.style.textShadow = `0 0 24px ${col}90`; }
+  if (fullEl)  {
+    const OCT = { '-1':'Mandra', 0:'Madhya', 1:'Taar', 2:'Ati-Taar' };
+    fullEl.textContent = `${swara.full} � ${OCT[swara.octOffset] ?? ''}`;
+  }
+  if (freqEl)  freqEl.textContent = `${hz} Hz`;
+  if (centsEl) {
+    const sign = swara.centsFromSwara >= 0 ? '+' : '';
+    centsEl.textContent = `${sign}${swara.centsFromSwara}�`;
+    centsEl.style.color = tuneC;
+  }
+  if (needleEl) {
+    const pct = Math.max(0, Math.min(100, ((swara.centsFromSwara + 50) / 100) * 100));
+    needleEl.style.left      = `${pct}%`;
+    needleEl.style.background = tuneC;
+    needleEl.style.boxShadow  = `0 0 10px ${tuneC}`;
+  }
+
+  // Stats (throttled to ~6fps)
+  if (Math.random() < 0.1 && _pitchEngine) {
+    const s = _pitchEngine.stats;
+    const fps = 60;
+    const elAcc  = document.getElementById('statAccuracy');
+    const elStr  = document.getElementById('statStreak');
+    const elAvg  = document.getElementById('statAvgCents');
+    const elStab = document.getElementById('statStability');
+    if (elAcc)  elAcc.textContent  = `${s.accuracy}%`;
+    if (elStr)  elStr.textContent  = `${(s.longestStreak / fps).toFixed(1)}s`;
+    if (elAvg)  elAvg.textContent  = `�${s.avgCents}�`;
+    if (elStab) elStab.textContent = `${s.stability}%`;
+  }
+}
+
+function _resetScopeUI() {
+  ['pitchSwaraName','pitchSwaraFull','pitchFreq','pitchOctave'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = id === 'pitchSwaraName' ? '�' : ''; el.style.color = ''; }
+  });
+  ['statAccuracy','statStreak','statAvgCents','statStability'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = '�';
+  });
+  const n = document.getElementById('tunerNeedle');
+  if (n) { n.style.left = '50%'; n.style.background = 'var(--text3)'; n.style.boxShadow = ''; }
+}
