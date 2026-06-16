@@ -1,4 +1,5 @@
 import { SwaraMappingEngine } from '../../audio/swara-mapping-engine.js';
+import { WesternNoteEngine } from '../../audio/western-note-engine.js';
 import { SWARAS } from '../../data/swaras.js';
 
 /**
@@ -91,9 +92,8 @@ export class TargetBarRenderer {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        let label = sw.label;
-        if (note.o === -1) label = '¸' + label;
-        if (note.o === 1)  label = '˙' + label;
+        const noteInfo = WesternNoteEngine.parseMidi(targetMidi);
+        const label = `${noteInfo.fullNotation} (${sw.label})`;
         
         // Clip text inside bar roughly
         ctx.save();
