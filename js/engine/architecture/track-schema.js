@@ -70,6 +70,12 @@ export class UserPitchTrack extends BasePitchTrack {
     super(id);
     this.type = 'UserPitchTrack';
     this.timestamp = new Date().toISOString();
+    
+    // Recording Metadata
+    this.micName = '';
+    this.recordedSampleRate = 44100;
+    this.latencyMs = 0;
+    this.noiseFloorRms = 0;
   }
 }
 

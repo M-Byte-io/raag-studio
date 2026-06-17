@@ -14,6 +14,14 @@
  * @property {import('./annotation-schema.js').BaseAnnotation[]} annotations - Global annotations.
  * @property {SessionSettings} settings - UI/Playback settings (e.g., current zoom level).
  * @property {SessionStatistics} statistics - Overall performance metrics.
+ * @property {SessionSnapshot[]} snapshots - History of session states for undo/recovery.
+ */
+
+/**
+ * @typedef {Object} SessionSnapshot
+ * @property {number} timestamp - Epoch timestamp of the snapshot.
+ * @property {string} label - Auto-save, manual, or command description.
+ * @property {Object} state - Serialized JSON of the SessionProject (excluding snapshots array).
  */
 
 /**
@@ -29,8 +37,10 @@
  * @typedef {Object} TrackGroup
  * @property {string} id - Unique group ID.
  * @property {string} name - Display name (e.g., "Vocal Takes").
+ * @property {boolean} isVisible - Whether this group is expanded/visible.
  * @property {boolean} isMuted - Whether this group is muted.
  * @property {boolean} isSoloed - Whether this group is soloed.
+ * @property {boolean} isCollapsed - Whether the group is collapsed in UI.
  * @property {import('./track-schema.js').BasePitchTrack[]} tracks - The tracks in this group.
  */
 
@@ -61,6 +71,7 @@ export function createEmptySession() {
     trackGroups: [],
     annotations: [],
     settings: { playbackRate: 1.0, viewStartSec: 0, viewEndSec: 10 },
-    statistics: { totalPracticeTimeSec: 0, overallAccuracy: 0 }
+    statistics: { totalPracticeTimeSec: 0, overallAccuracy: 0 },
+    snapshots: []
   };
 }
