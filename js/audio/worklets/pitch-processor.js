@@ -56,7 +56,15 @@ class PitchProcessor extends AudioWorkletProcessor {
       return;
     }
 
-    const rawHz = this._yin(this._buffer, sampleRate);
+    // Decimate buffer by 4 to reduce YIN CPU load by 15x
+    const decimationFactor = 4;
+    const decimatedSR = sampleRate / decimationFactor;
+    const decimatedBuffer = new Float32Array(this._bufferSize / decimationFactor);
+    for (let i = 0; i < decimatedBuffer.length; i++) {
+      decimatedBuffer[i] = this._buffer[i * decimationFactor];
+    }
+
+    const rawHz = this._yin(decimatedBuffer, decimatedSR);
     if (rawHz === null) {
       this.port.postMessage({ type: 'pitch', midi: null, rms, confidence: 0 });
       return;

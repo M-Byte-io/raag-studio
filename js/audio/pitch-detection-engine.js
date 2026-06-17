@@ -19,7 +19,14 @@ export class YinPitchDetector extends IPitchDetector {
    * @returns {{ midi: number, confidence: number } | null}
    */
   process(buf, sr) {
-    const rawHz = this._yin(buf, sr);
+    const decimationFactor = 4;
+    const decimatedSR = sr / decimationFactor;
+    const decimatedBuffer = new Float32Array(Math.floor(buf.length / decimationFactor));
+    for (let i = 0; i < decimatedBuffer.length; i++) {
+      decimatedBuffer[i] = buf[i * decimationFactor];
+    }
+
+    const rawHz = this._yin(decimatedBuffer, decimatedSR);
     if (rawHz === null) return null;
     
     // We don't have the full confidence score from the simplified YIN easily,
