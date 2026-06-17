@@ -991,4 +991,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.removeEventListener('click', primer); 
   };
   document.addEventListener('click', primer);
-}
+});

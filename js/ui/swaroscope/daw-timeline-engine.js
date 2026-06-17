@@ -486,6 +486,8 @@ export class DAWTimelineEngine {
       this.ctx.lineTo(x, h);
       this.ctx.stroke();
     }
+  }
+
   _renderHTMLOverlays(w, h) {
     const secPerPixel = (this.viewport.endSec - this.viewport.startSec) / w;
     const activeIds = new Set();
