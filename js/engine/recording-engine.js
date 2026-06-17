@@ -141,9 +141,23 @@ export class RecordingEngine {
     const { midi, rms, confidence } = data;
     const t = syncManager.getCurrentTime(); // absolute timeline matching
     
-    this._timeBuffer.push(t);
-    this._midiBuffer.push(midi || 0);
-    this._rmsBuffer.push(rms || 0);
-    this._confidenceBuffer.push(confidence || 0);
+    // Target index at 100 FPS
+    const targetIndex = Math.floor(t * 100);
+    
+    // Safety check for extreme jumps or first frame
+    if (targetIndex < 0) return;
+    
+    // Fill any gaps with 0
+    while (this._midiBuffer.length <= targetIndex) {
+      this._timeBuffer.push(this._midiBuffer.length / 100);
+      this._midiBuffer.push(0);
+      this._rmsBuffer.push(0);
+      this._confidenceBuffer.push(0);
+    }
+    
+    // Set the value at the correct absolute time
+    this._midiBuffer[targetIndex] = midi || 0;
+    this._rmsBuffer[targetIndex] = rms || 0;
+    this._confidenceBuffer[targetIndex] = confidence || 0;
   }
 }

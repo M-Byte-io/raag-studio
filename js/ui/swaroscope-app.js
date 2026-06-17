@@ -106,7 +106,7 @@ export class SwaroscopeApp {
         this.dawEngine.loadProject(this.session);
         
         // Stop playback/virtual clock
-        if (this.audioEl.src) {
+        if (this.audioEl.getAttribute('src')) {
           this.audioEl.pause();
         } else {
           syncManager.stopVirtualClock();
@@ -127,7 +127,7 @@ export class SwaroscopeApp {
         }
         
         // Start playhead
-        if (this.audioEl.src) {
+        if (this.audioEl.getAttribute('src')) {
            this.audioEl.currentTime = 0;
            this.audioEl.play();
         } else {
