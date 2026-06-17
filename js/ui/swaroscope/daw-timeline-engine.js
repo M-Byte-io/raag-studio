@@ -138,6 +138,15 @@ export class DAWTimelineEngine {
         this.viewport.endSec += e.deltaX * secPerPixel;
         
         this.viewport.centerMidi -= e.deltaY * midiPerPixel;
+        
+        // Clamp panning
+        if (this.viewport.startSec < -10) {
+          const dur = this.viewport.endSec - this.viewport.startSec;
+          this.viewport.startSec = -10;
+          this.viewport.endSec = -10 + dur;
+        }
+        
+        this.viewport.centerMidi = Math.max(36, Math.min(this.viewport.centerMidi, 96));
       }
       
       if (!syncManager._isRunning) this.render();
@@ -285,7 +294,7 @@ export class DAWTimelineEngine {
 
     // 5. Draw Tracks (LOD strategy)
     for (const track of this.tracks) {
-      if (track.isVisible) this._drawTrack(track, w, h);
+      if (track.isVisible !== false) this._drawTrack(track, w, h);
     }
 
     // 6. Draw Playhead

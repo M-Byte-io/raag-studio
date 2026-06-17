@@ -95,6 +95,9 @@ export class SwaroscopeApp {
           userGroup = { id: 'user-group', name: 'User Takes', isVisible: true, isMuted: false, isSoloed: false, isCollapsed: false, tracks: [] };
           this.session.trackGroups.push(userGroup);
         }
+        
+        // Remove the temporary live track and add the finalized one
+        this.dawEngine.tracks = this.dawEngine.tracks.filter(t => t !== this.recordingEngine.activeTrack);
         userGroup.tracks.push(userTrack);
         
         // Run AI Analysis plugins (Phase 12 Gamak, Phase 11 AI Feedback, etc.)
@@ -102,12 +105,35 @@ export class SwaroscopeApp {
         
         this.dawEngine.loadProject(this.session);
         
+        // Stop playback/virtual clock
+        if (this.audioEl.src) {
+          this.audioEl.pause();
+        } else {
+          syncManager.stopVirtualClock();
+        }
+        
         // Save to DB
         contourDB.saveSession(this.session);
       } else {
         await this.audioCtx.resume();
         await this.recordingEngine.prepare();
         this.recordingEngine.startRecording();
+        
+        // Push live track into DAWTimelineEngine so it draws!
+        if (this.recordingEngine.activeTrack) {
+          if (!this.dawEngine.tracks.includes(this.recordingEngine.activeTrack)) {
+             this.dawEngine.tracks.push(this.recordingEngine.activeTrack);
+          }
+        }
+        
+        // Start playhead
+        if (this.audioEl.src) {
+           this.audioEl.currentTime = 0;
+           this.audioEl.play();
+        } else {
+           syncManager.startVirtualClock();
+        }
+        
         this.micBtn.textContent = '⏹ Stop Mic';
         this.micBtn.classList.add('active');
       }

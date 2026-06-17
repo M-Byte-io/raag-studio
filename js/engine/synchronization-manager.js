@@ -48,15 +48,32 @@ export class SynchronizationManager {
     });
   }
 
-  /**
-   * Returns the ultra-smooth interpolated time in seconds.
-   * @returns {number}
-   */
   getCurrentTime() {
+    if (this._isVirtual) {
+      return this._smoothedTime;
+    }
     if (!this._isRunning || !this.audioElement) {
       return this.audioElement ? this.audioElement.currentTime : 0;
     }
     return this._smoothedTime;
+  }
+
+  startVirtualClock() {
+    this._isVirtual = true;
+    this._isRunning = true;
+    this._virtualStartTime = performance.now();
+    this._lastPolledTime = performance.now();
+    this._smoothedTime = 0;
+    this._loop();
+    globalEventBus.emit(EVENTS.PLAYBACK_STARTED);
+  }
+
+  stopVirtualClock() {
+    this._isVirtual = false;
+    this._isRunning = false;
+    if (this._rafId) cancelAnimationFrame(this._rafId);
+    this._smoothedTime = 0;
+    globalEventBus.emit(EVENTS.PLAYBACK_PAUSED);
   }
 
   _loop() {
@@ -66,6 +83,13 @@ export class SynchronizationManager {
     const now = performance.now();
     const dt = (now - this._lastPolledTime) / 1000.0;
     this._lastPolledTime = now;
+
+    if (this._isVirtual) {
+      this._smoothedTime += dt;
+      return;
+    }
+
+    if (!this.audioElement) return;
 
     const currentAudioTime = this.audioElement.currentTime;
     const playbackRate = this.audioElement.playbackRate;

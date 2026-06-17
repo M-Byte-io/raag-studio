@@ -81,6 +81,10 @@ export class RecordingEngine {
     this._rmsBuffer = [];
     this._timeBuffer = [];
 
+    // Link directly so DAWTimelineEngine can read live
+    this.activeTrack.midiTrack = this._midiBuffer;
+    this.activeTrack.sampleRate = 100;
+
     globalEventBus.emit(EVENTS.RECORDING_STARTED, this.activeTrack.id);
   }
 
