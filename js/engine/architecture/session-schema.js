@@ -67,7 +67,7 @@ export function createEmptySession() {
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     id: crypto.randomUUID(),
-    metadata: { raga: '', taal: '', performer: '', saFrequency: 440, date: new Date().toISOString() },
+    metadata: { raga: '', taal: '', performer: '', saFrequency: 261.63, saMidi: 60, date: new Date().toISOString() },
     trackGroups: [],
     annotations: [],
     settings: { playbackRate: 1.0, viewStartSec: 0, viewEndSec: 10 },

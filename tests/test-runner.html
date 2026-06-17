@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Swaroscope 2.0 Test Suite</title>
+  <style>
+    body { font-family: monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
+    h1 { border-bottom: 1px solid #333; padding-bottom: 10px; }
+    #test-results { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Swaroscope 2.0 Verification Suite</h1>
+  <div id="test-results"></div>
+
+  <script type="module">
+    import { runner } from './test-framework.js';
+    
+    // Import all test suites
+    import './scale.test.js';
+    import './dtw.test.js';
+    import './dsp.test.js';
+    import './ui.test.js';
+    
+    // Run tests
+    runner.runAll();
+  </script>
+</body>
+</html>

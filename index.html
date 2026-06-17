@@ -418,72 +418,44 @@
   </section><!-- /talaCard -->
 
   <!-- ══════════════════════════════════════════════════════════════
-       SWAROSCOPE — Real-Time Vocal Pitch Monitor
+       SWAROSCOPE 2.0 (DAW Timeline)
   ══════════════════════════════════════════════════════════════ -->
   <section class="card" id="swaroscopeCard" style="grid-column:1/-1;margin-top:0" aria-label="Swaroscope">
-
-    <!-- Header -->
+    
+    <!-- Header & Transport -->
     <div class="tala-header-row" style="margin-bottom:14px">
       <div class="tala-active-dot" id="scopeActiveDot"></div>
-      <h2 class="card-title" style="margin:0">🎤 Swaroscope</h2>
+      <h2 class="card-title" style="margin:0">🎤 Swaroscope 2.0</h2>
+      
+      <!-- Audio Upload & Transport -->
       <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap">
-        <!-- Mode toggle -->
-        <div class="scope-mode-row" id="scopeModeRow">
-          <button class="scope-mode-btn active" id="scopeMonitorBtn" data-mode="monitor">🎵 Free Monitor</button>
-          <button class="scope-mode-btn" id="scopeGuidedBtn" data-mode="guided">🎯 Guided Riyaz</button>
-        </div>
+        <input type="file" id="audioUploadInput" accept="audio/mp3, audio/wav, audio/m4a, audio/ogg" style="display:none" />
+        <button class="scope-mode-btn" id="uploadAudioBtn" title="Upload Reference Audio">📁 Upload Reference</button>
+        
+        <audio id="masterAudio" style="display:none"></audio>
+        <button class="scope-mode-btn" id="dawPlayBtn">▶ Play</button>
+        <button class="scope-mode-btn" id="dawPauseBtn" style="display:none">⏸ Pause</button>
+        
         <!-- Mic toggle -->
         <button class="tala-start-btn" id="scopeStartBtn" aria-label="Enable microphone">🎤 Enable Mic</button>
       </div>
     </div>
 
-    <!-- Large tuner display -->
-    <div class="scope-tuner-row">
-      <div class="scope-swara-block">
-        <div class="scope-swara-name" id="pitchNoteName">-</div>
-        <div class="scope-swara-full" id="pitchNoteSecondary">Enable mic to detect pitch</div>
-      </div>
-      <div class="scope-freq-block">
-        <div class="scope-freq" id="pitchFreq"></div>
-        <div class="scope-cents" id="pitchOctave"></div>
-      </div>
-      <!-- Tuner needle track -->
-      <div class="scope-needle-wrap">
-        <div class="scope-needle-track" id="tunerTrack">
-          <div class="scope-needle-labels">
-            <span>−50¢</span><span>−25¢</span><span style="color:var(--accent3);font-weight:700">♩</span><span>+25¢</span><span>+50¢</span>
-          </div>
-          <div class="scope-needle-bar">
-            <div class="scope-needle" id="tunerNeedle"></div>
-            <div class="scope-needle-center"></div>
-          </div>
-        </div>
-      </div>
-      <!-- Session stats -->
-      <div class="scope-stats-block" id="scopeStatsBlock">
-        <div class="scope-stat"><span class="scope-stat-val" id="statAccuracy">—</span><span class="scope-stat-lbl">Accuracy</span></div>
-        <div class="scope-stat"><span class="scope-stat-val" id="statStreak">—</span><span class="scope-stat-lbl">Best Streak</span></div>
-        <div class="scope-stat"><span class="scope-stat-val" id="statAvgCents">—</span><span class="scope-stat-lbl">Avg Cents</span></div>
-        <div class="scope-stat"><span class="scope-stat-val" id="statStability">—</span><span class="scope-stat-lbl">Stability</span></div>
-      </div>
+    <!-- DAW Timeline Canvas -->
+    <div class="scope-canvas-wrap" style="height: 300px; position: relative;">
+      <canvas id="swaroscopeCanvas" class="scope-canvas" aria-label="Pitch visualization"></canvas>
     </div>
 
-    <!-- Swaroscope canvas -->
-    <div class="scope-canvas-wrap">
-      <canvas id="swaroscopeCanvas" class="scope-canvas" aria-label="Pitch visualization" title="Scroll up/down to pan. Ctrl+Scroll to zoom."></canvas>
+    <!-- Stats & Feedback -->
+    <div class="scope-stats-block" id="scopeStatsBlock" style="margin-top: 10px;">
+      <div class="scope-stat"><span class="scope-stat-val" id="statAccuracy">—</span><span class="scope-stat-lbl">Accuracy</span></div>
+      <div class="scope-stat"><span class="scope-stat-val" id="statAvgCents">—</span><span class="scope-stat-lbl">Avg Deviation</span></div>
+      <div class="scope-stat"><span class="scope-stat-val" id="statPracticeTime">—</span><span class="scope-stat-lbl">Practice Time</span></div>
     </div>
 
-    <!-- Legend -->
-    <div class="scope-legend">
-      <span class="scope-legend-item" style="color:#34d399">● Perfect (±15¢)</span>
-      <span class="scope-legend-item" style="color:#fbbf24">● Good (±30¢)</span>
-      <span class="scope-legend-item" style="color:#f87171">● Off pitch</span>
-      <span class="scope-legend-item" style="color:#c084fc;margin-left:auto">■ Target swara (Guided mode)</span>
-    </div>
-
-    <!-- Mic permission error -->
-    <div class="scope-error" id="scopeError" style="display:none">
-      ⚠ Microphone access denied. Please allow mic permission in your browser settings and reload.
+    <!-- AI Guru Feedback Area -->
+    <div id="aiGuruFeedback" style="margin-top: 10px; padding: 10px; background: rgba(168, 85, 247, 0.1); border-left: 3px solid #c084fc; border-radius: 4px; display: none;">
+      <strong style="color: #c084fc;">AI Guru:</strong> <span id="aiGuruText">Analyzing...</span>
     </div>
 
   </section><!-- /swaroscopeCard -->
