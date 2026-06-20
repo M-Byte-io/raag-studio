@@ -1,3 +1,4 @@
+import { ensureAudio, getCtx } from '../audio/context.js';
 import { globalEventBus, EVENTS } from '../engine/architecture/event-bus.js';
 import { createEmptySession } from '../engine/architecture/session-schema.js';
 import { TeacherCommentAnnotation } from '../engine/architecture/annotation-schema.js';
@@ -16,7 +17,8 @@ pluginManager.register(new AIFeedbackPlugin());
 export class SwaroscopeApp {
   constructor() {
     this.session = createEmptySession();
-    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    ensureAudio();
+    this.audioCtx = getCtx();
     
     // UI Elements
     this.canvas = document.getElementById('swaroscopeCanvas');
@@ -32,7 +34,8 @@ export class SwaroscopeApp {
     this.recordingEngine = new RecordingEngine(this.audioCtx);
     
     // Worker
-    this.extractionWorker = new Worker('/js/audio/pitch-extraction-worker.js', { type: 'module' });
+    const workerUrl = new URL('../audio/pitch-extraction-worker.js', import.meta.url).href;
+    this.extractionWorker = new Worker(workerUrl);
     
     this._bindEvents();
     syncManager.bindAudio(this.audioEl);

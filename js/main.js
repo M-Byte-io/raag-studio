@@ -50,18 +50,10 @@ import { initTalaUI, renderTalaSelector, renderBolStrip, renderAvartaRing,
          setMuteButtons, toggleRiyazPanel,
          updateRiyazProgress, markRiyazComplete }  from './ui/tala-ui.js';
 
-// -- Swaroscope --
-import { PitchEngine }   from './audio/pitch-engine.js';
-import { VisualizationEngine } from './ui/swaroscope/visualization-engine.js';
 
 // ââ Scheduler instance ââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const scheduler = new Scheduler(() => getCtx());
 
-// -- Swaroscope instances
-let _pitchEngine  = null;
-let _swaroscope   = null;
-let _scopeRunning = false;
-let _scopeMode    = 'monitor';
 
 // ââ Beat phase ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 let _beatPhase = 0;
@@ -457,8 +449,22 @@ function generateShifts() {
   const intervals = gi.map(item => item.thaatIdx - startPos);
 
   const shifts = [];
-  for (let shift = 0; shift < tLen; shift++) {
+  
+  // Aaroh (Ascending)
+  for (let shift = 0; shift <= tLen; shift++) {
     const notes = intervals.map(interval => {
+      const pos      = shift + interval;
+      const noteIdx  = ((pos % tLen) + tLen) % tLen;
+      const octOff   = pos >= 0 ? Math.floor(pos / tLen) : -Math.ceil(-pos / tLen);
+      return { id: thaat[noteIdx], o: octOff, dur: 1 };
+    });
+    shifts.push(notes);
+  }
+
+  // Avroh (Descending)
+  const avrohIntervals = intervals.map(i => -i);
+  for (let shift = tLen - 1; shift >= 0; shift--) {
+    const notes = avrohIntervals.map(interval => {
       const pos      = shift + interval;
       const noteIdx  = ((pos % tLen) + tLen) % tLen;
       const octOff   = pos >= 0 ? Math.floor(pos / tLen) : -Math.ceil(-pos / tLen);
@@ -469,7 +475,7 @@ function generateShifts() {
 
   set('generatedShifts', shifts);
   renderGenResults(shifts, { onLoad: loadGenShift, onPlay: playGenShift });
-  showToast(`Generated ${shifts.length} shifts for ${thaatName}!`);
+  showToast(`Generated full Aaroh/Avroh alankar for ${thaatName}!`);
 }
 
 function loadGenShift(idx) {
@@ -983,12 +989,4 @@ function _initSwaroscope() {
   }
 }
 
-// Ensure it initializes on DOMContentLoaded or after user gesture
-document.addEventListener('DOMContentLoaded', () => {
-  // Let the user initiate audio context with a click first
-  const primer = () => { 
-    _initSwaroscope();
-    document.removeEventListener('click', primer); 
-  };
-  document.addEventListener('click', primer);
-});
+

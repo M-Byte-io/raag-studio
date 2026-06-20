@@ -53,20 +53,14 @@ export function buildShiftQueue(shifts, direction, reps) {
   const queue    = [];
   const shiftMap = [];
 
+  // The 'shifts' array now contains the full Aaroh and Avroh sequence.
+  // We simply play each shift as it is, repeated 'reps' times.
   shifts.forEach((shift, si) => {
     for (let r = 0; r < reps; r++) {
-      if (direction === 'aaroh' || direction === 'both') {
-        shift.forEach((note, ni) => {
-          queue.push(note);
-          shiftMap.push({ shiftIdx: si, noteIdx: ni });
-        });
-      }
-      if (direction === 'avroh' || direction === 'both') {
-        [...shift].reverse().forEach((note, ni) => {
-          queue.push(note);
-          shiftMap.push({ shiftIdx: si, noteIdx: shift.length - 1 - ni });
-        });
-      }
+      shift.forEach((note, ni) => {
+        queue.push(note);
+        shiftMap.push({ shiftIdx: si, noteIdx: ni });
+      });
     }
   });
 
