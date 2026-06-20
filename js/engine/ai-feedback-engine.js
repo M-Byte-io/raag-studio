@@ -44,7 +44,7 @@ export class AIFeedbackEngine extends IAIFeedbackEngine {
         let targetMidi = rVal;
         if (this.scaleMappingEngine) {
           const nearestMidi = Math.round(uVal);
-          targetMidi = this.scaleMappingEngine.getAdjustedMidi(nearestMidi, 60);
+          targetMidi = this.scaleMappingEngine.getAdjustedMidi(nearestMidi, 48);
         }
 
         const centsDev = (uVal - targetMidi) * 100;

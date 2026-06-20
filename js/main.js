@@ -293,7 +293,7 @@ function adjustRepeats(d) {
 }
 
 function setOctave(oct) {
-  set('startOctave', 4 + oct);
+  set('startOctave', 3 + oct);
   document.querySelectorAll('.oct-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.oct) === oct));
   if (get('tanpuraOn')) _restartTanpura();
 }

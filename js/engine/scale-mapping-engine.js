@@ -35,9 +35,9 @@ export class ScaleMappingEngine {
    * In Just Intonation (5/4), it is ~386 cents above C, not 400. 
    * So this returns 63.86.
    * @param {number} midiNote (Integer)
-   * @param {number} saMidi (Integer) The root note, usually 60 (C4)
+   * @param {number} saMidi (Integer) The root note, usually 48 (C3)
    */
-  getAdjustedMidi(midiNote, saMidi = 60) {
+  getAdjustedMidi(midiNote, saMidi = 48) {
     const swaraNames = ['S','r','R','g','G','m','M','P','d','D','n','N'];
     const interval = (midiNote - saMidi) % 12;
     const normalizedInterval = interval >= 0 ? interval : interval + 12;

@@ -35,7 +35,7 @@ export class DAWTimelineEngine {
     this.viewport = {
       startSec: 0,
       endSec: 10,       // Zoom level: 10 seconds wide
-      centerMidi: 60.0, // C4
+      centerMidi: 48.0, // C3
       midiRange: 24     // Zoom level: 2 octaves high
     };
 
@@ -284,7 +284,7 @@ export class DAWTimelineEngine {
     this._drawRegions(w, h);
 
     // 3. Draw Grid Lines (Y-axis Swaras / X-axis Seconds)
-    const saMidi = this.sessionProject?.metadata?.saMidi || 60;
+    const saMidi = this.sessionProject?.metadata?.saMidi || 48;
     this._drawGrid(w, h, saMidi);
 
     // 4. Draw DTW alignment paths (Phase 10)

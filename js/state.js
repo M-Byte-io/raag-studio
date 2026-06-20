@@ -20,7 +20,7 @@ const _listeners = new Map();
 const _state = {
   // Pitch / tuning
   basePitch:    0,       // 0=C, 1=C#, … 11=B
-  startOctave:  4,       // MIDI octave of Sa
+  startOctave:  3,       // MIDI octave of Sa
 
   // Playback
   tempo:     80,         // BPM [30–500]
