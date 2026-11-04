@@ -321,12 +321,12 @@ input[type="range"]::-moz-range-thumb {
 .pattern-note.pa-sa  { background: rgba(52,211,153,0.18);  border: 1px solid rgba(52,211,153,0.4);  color: var(--col-pa-sa-fg); }
 .pattern-note.dur-half   { min-width: 56px; }
 .pattern-note.dur-eighth { min-width: 28px; opacity: 0.9; }
-.pattern-note.dur-extended { min-width: calc(38px + var(--ext-beats, 1) * 20px); }
+.pattern-note.dur-extended { min-width: 56px; flex-direction: row; align-items: center; gap: 2px; padding: 6px 10px; }
 .pattern-note .sustain-dashes {
-  font-size: 11px; letter-spacing: -2px; opacity: 0.55;
-  margin-left: 2px; color: currentColor;
+.pattern-note .sustain-dashes {
+  font-size: 12px; letter-spacing: -3px; opacity: 0.45;
+  margin-left: 3px; color: currentColor; flex-shrink: 0;
 }
-.pattern-note .note-lbl { font-size: 14px; font-weight: 700; }
 .pattern-note.playing-note { animation: notePulse 0.25s ease; box-shadow: 0 0 18px currentColor !important; }
 
 /* ── FLOW NOTES ──────────────────────────────────── */

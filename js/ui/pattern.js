@@ -36,6 +36,8 @@ export function renderPattern(pattern, { onRemove, onPreview, onExtend }) {
     el.title     = `${sw.full} · ${dur === 0.5 ? '½ beat' : dur + (dur === 1 ? ' beat' : ' beats')} — click to preview`;
     el.setAttribute('role', 'button');
     el.dataset.idx = i;
+    // Scale chip width with duration (each extra beat = +18px)
+    if (isExtended) el.style.minWidth = (38 + (Math.floor(dur) - 1) * 18) + 'px';
 
     // Oct badge
     if (octBadge) {
