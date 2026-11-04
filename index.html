@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -229,7 +229,7 @@
     <section class="card" id="patternCard">
       <div class="card-header">
         <h2 class="card-title">Pattern Builder</h2>
-        <span style="font-size:11px;color:var(--text3)">Click a swara above · Backspace=undo · Delete=clear</span>
+        <span style="font-size:11px;color:var(--text3)">Click a swara · <kbd style="font-size:10px;padding:1px 4px;border:1px solid var(--text3);border-radius:3px">-</kbd> extend last note · Backspace=undo</span>
       </div>
       <!-- Pattern track -->
       <div class="pattern-track empty" id="patternTrack" aria-label="Your pattern" role="list"></div>
@@ -242,9 +242,9 @@
       <div class="pattern-actions">
         <button class="btn btn-primary" id="buildPlayBtn">▶ Play</button>
         <button class="btn btn-ghost"   id="undoBtn"   title="Undo last (Backspace)">↩ Undo</button>
-        <button class="btn btn-ghost"   id="reverseBtn" title="Reverse pattern">⇄ Reverse</button>
+        <button class="btn btn-ghost"   id="undoBtn"    title="Undo last (Backspace)">↩ Undo</button>
         <button class="btn btn-ghost"   id="saveBtn"    title="Save alankar">💾 Save</button>
-        <button class="btn btn-danger"  id="clearBtn"   title="Clear pattern (Delete)">🗑 Clear</button>
+        <button class="btn btn-ghost"   id="extendBtn"  title="Extend last note by 1 beat (- key)">— Extend</button>
       </div>
     </section>
 

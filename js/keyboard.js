@@ -2,11 +2,12 @@
  * KEYBOARD — Global keyboard shortcuts.
  *
  * New in this version (U1, U4):
- *  • Note entry: s r R g G m M p d D n N ' → add swara to pattern
+ *  • s r R g G m M p d D n N ' → add swara to pattern
  *  • T → tap tempo
  *  • Space → play/stop
  *  • Backspace → undo last note
  *  • Delete → clear pattern
+ *  • - (Minus) → extend last note by 1 beat
  *  • ↑/↓ → +/- 5 BPM
  *  • L → toggle loop
  *  • [ → half speed
@@ -43,8 +44,9 @@ function _onKey(e) {
   if (e.code === 'Space') { e.preventDefault(); _handlers.togglePlay?.(); return; }
 
   // ── Pattern editing ───────────────────────────────────────────────────────
-  if (e.code === 'Backspace') { e.preventDefault(); _handlers.undoLast?.();     return; }
-  if (e.code === 'Delete')    { e.preventDefault(); _handlers.clearPattern?.(); return; }
+  if (e.code === 'Backspace') { e.preventDefault(); _handlers.undoLast?.();       return; }
+  if (e.code === 'Delete')    { e.preventDefault(); _handlers.clearPattern?.();   return; }
+  if (e.code === 'Minus')     { e.preventDefault(); _handlers.extendLastNote?.(); return; }
 
   // ── Tempo ─────────────────────────────────────────────────────────────────
   if (e.code === 'ArrowUp')   { e.preventDefault(); _handlers.adjustTempo?.(5);   return; }

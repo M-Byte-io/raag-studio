@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════
    RAAG STUDIO — Components
 ═══════════════════════════════════════════════════ */
 
@@ -321,6 +321,12 @@ input[type="range"]::-moz-range-thumb {
 .pattern-note.pa-sa  { background: rgba(52,211,153,0.18);  border: 1px solid rgba(52,211,153,0.4);  color: var(--col-pa-sa-fg); }
 .pattern-note.dur-half   { min-width: 56px; }
 .pattern-note.dur-eighth { min-width: 28px; opacity: 0.9; }
+.pattern-note.dur-extended { min-width: calc(38px + var(--ext-beats, 1) * 20px); }
+.pattern-note .sustain-dashes {
+  font-size: 11px; letter-spacing: -2px; opacity: 0.55;
+  margin-left: 2px; color: currentColor;
+}
+.pattern-note .note-lbl { font-size: 14px; font-weight: 700; }
 .pattern-note.playing-note { animation: notePulse 0.25s ease; box-shadow: 0 0 18px currentColor !important; }
 
 /* ── FLOW NOTES ──────────────────────────────────── */
@@ -338,6 +344,7 @@ input[type="range"]::-moz-range-thumb {
 .flow-note.played { opacity: 0.55; }
 .flow-sep { color: var(--text3); font-size: 11px; opacity: 0.35; }
 
+.flow-sustain { opacity: 0.3 !important; font-size: 10px !important; letter-spacing: -1px; padding: 0 1px !important; }
 /* ── PATTERN ACTIONS ─────────────────────────────── */
 .pattern-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
 
@@ -778,7 +785,7 @@ select:focus { border-color: var(--accent); }
 }
 
 /* ------------------------------------------------------
-   SWAROSCOPE � Real-Time Vocal Pitch Monitor
+   SWAROSCOPE � Real-Time Vocal Pitch Monitor
 ------------------------------------------------------ */
 
 .scope-mode-row {

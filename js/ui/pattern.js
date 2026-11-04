@@ -13,7 +13,7 @@ import { buildSequence } from '../engine/sequence.js';
  * @param {object[]} pattern — { id, o, dur }[]
  * @param {{ onRemove, onPreview }} callbacks
  */
-export function renderPattern(pattern, { onRemove, onPreview }) {
+export function renderPattern(pattern, { onRemove, onPreview, onExtend }) {
   const track = document.getElementById('patternTrack');
   if (!track) return;
 
@@ -24,15 +24,18 @@ export function renderPattern(pattern, { onRemove, onPreview }) {
     const sw = getSw(note.id);
     if (!sw) return;
 
-    const durClass  = note.dur === 2 ? 'dur-half' : note.dur === 0.5 ? 'dur-eighth' : '';
-    const durBadge  = note.dur === 2 ? '½' : note.dur === 0.5 ? '2×' : '';
-    const octBadge  = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
-    const durTitle  = note.dur === 2 ? ' (Half note)' : note.dur === 0.5 ? ' (Eighth note)' : '';
+    const dur = note.dur || 1;
+    // Extended = any integer ≥ 2 (beats held); dur-half = exactly 2 with half-note icon
+    const isExtended = dur > 1;
+    const isEighth   = dur === 0.5;
+    const durClass   = isEighth ? 'dur-eighth' : isExtended ? 'dur-extended' : '';
+    const octBadge   = note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '';
 
     const el = document.createElement('div');
     el.className = `pattern-note ${sw.type} ${durClass}`;
-    el.title     = `${sw.full}${durTitle} — click to preview`;
+    el.title     = `${sw.full} · ${dur === 0.5 ? '½ beat' : dur + (dur === 1 ? ' beat' : ' beats')} — click to preview`;
     el.setAttribute('role', 'button');
+    el.dataset.idx = i;
 
     // Oct badge
     if (octBadge) {
@@ -44,14 +47,29 @@ export function renderPattern(pattern, { onRemove, onPreview }) {
 
     // Note label
     const lbl = document.createElement('span');
+    lbl.className = 'note-lbl';
     lbl.textContent = sw.label;
     el.appendChild(lbl);
 
-    // Duration badge
-    if (durBadge) {
+    // Extended: render sustain dashes inside the chip
+    if (isExtended) {
+      const extra = Math.floor(dur) - 1; // number of extra beats
+      const dashes = document.createElement('span');
+      dashes.className = 'sustain-dashes';
+      dashes.textContent = '—'.repeat(extra);
+      el.appendChild(dashes);
+    }
+
+    // Duration badge (beats count shown bottom-right for extended notes)
+    if (isEighth) {
       const db = document.createElement('span');
       db.className = 'dur-badge';
-      db.textContent = durBadge;
+      db.textContent = '½';
+      el.appendChild(db);
+    } else if (isExtended) {
+      const db = document.createElement('span');
+      db.className = 'dur-badge';
+      db.textContent = `${dur}b`;
       el.appendChild(db);
     }
 
@@ -98,10 +116,22 @@ export function renderFlowNotes(pattern, direction, repeats) {
     const sw = getSw(note.id);
     if (!sw) return;
 
+    const dur = note.dur || 1;
     const el = document.createElement('span');
     el.className   = 'flow-note';
     el.textContent = (note.o === -1 ? '₋' : note.o === 1 ? '⁺' : '') + sw.label;
     container.appendChild(el);
+
+    // Show sustain dashes in flow preview for extended notes
+    if (dur > 1) {
+      for (let d = 1; d < Math.floor(dur); d++) {
+        const dash = document.createElement('span');
+        dash.className = 'flow-note flow-sustain';
+        dash.textContent = '—';
+        dash.title = `Sustain beat ${d + 1}`;
+        container.appendChild(dash);
+      }
+    }
 
     if (i < seq.length - 1) {
       const sep = document.createElement('span');

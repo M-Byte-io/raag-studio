@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MAIN â App initialization and orchestration.
  *
  * This is the single entry point. It wires together all modules:
@@ -388,6 +388,19 @@ function reversePattern() {
   renderFlowNotes(pattern, get('direction'), get('repeats'));
 }
 
+/** Extend the last note in the pattern by +1 beat. */
+function extendLastNote() {
+  const pattern = [...get('pattern')];
+  if (!pattern.length) { showToast('Add a note first!'); return; }
+  const last = { ...pattern[pattern.length - 1] };
+  last.dur = Math.min(16, (last.dur || 1) + 1);
+  pattern[pattern.length - 1] = last;
+  set('pattern', pattern);
+  renderPattern(pattern, { onRemove, onPreview: previewNote });
+  renderFlowNotes(pattern, get('direction'), get('repeats'));
+  showToast('\u2014 Extended to ' + last.dur + ' beat' + (last.dur === 1 ? '' : 's'));
+}
+
 // ââ Tanpura âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function toggleTanpura() {
@@ -666,10 +679,10 @@ function init() {
     doubleSpeed,
     tapTempo,
     toggleLoop,
+    toggleLoop,
     sharePattern,
+    extendLastNote,
   });
-
-  // Modal
   const saveNameInput = document.getElementById('saveNameInput');
   saveNameInput?.addEventListener('keydown', e => {
     if (e.key === 'Enter')  confirmSave();
@@ -769,8 +782,8 @@ function _wireButtons() {
   document.getElementById('undoBtn')?.addEventListener('click', undoLast);
   document.getElementById('clearBtn')?.addEventListener('click', clearPattern);
   document.getElementById('reverseBtn')?.addEventListener('click', reversePattern);
+  document.getElementById('extendBtn')?.addEventListener('click', extendLastNote);
   document.getElementById('saveBtn')?.addEventListener('click', openSaveModal);
-
   // Modal
   document.getElementById('cancelSaveBtn')?.addEventListener('click', closeSaveModal);
   document.getElementById('confirmSaveBtn')?.addEventListener('click', confirmSave);
