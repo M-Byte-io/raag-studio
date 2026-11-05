@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MAIN â App initialization and orchestration.
  *
  * This is the single entry point. It wires together all modules:
